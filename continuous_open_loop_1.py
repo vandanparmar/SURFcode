@@ -10,12 +10,15 @@ def analytic(x0,A,t):
 	return x
 
 #plotter for solution of open loop matrix differential equation
-def plot_analytic(analytic_f,dt,tot_t):
+def plot_analytic(analytic_f,x0,A,dt,tot_t):
 	t = np.arange(0,tot_t,dt)
-	x = np.zeros((len(t),4))
+	x = np.zeros((len(t),len(x0)))
 	for i,time in enumerate(t):
 		x[i,:] = analytic(x0,A,time)
-	plt.plot(t,x)
+	labels = ["x"+str(i) for i in range(0,len(x0))]
+	for x_arr,label in zip(x.transpose(),labels):
+		plt.plot(t,x_arr,label = label)
+	plt.legend()
 	plt.show()
 
 
@@ -26,6 +29,6 @@ A = np.matrix([[-0.5,0,0,0],[0,-0.3,0,0],[-1,-1,-1,-1],[0.1,0.1,0.1,0.1]])
 tot_t = 10
 dt = 0.1
 
-plot_analytic(analytic,0.1,10)
+plot_analytic(analytic,x0,A,0.1,10)
 
 
