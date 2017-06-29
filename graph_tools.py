@@ -1,10 +1,11 @@
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
-import random
 
-def generate_adj_matrix(n):
-    G = nx.binomial_graph(n,random.random())
+
+#generate a random graph with a given number of nodes and probability for each edge.
+def generate_adj_matrix(n,p):
+    G = nx.binomial_graph(n,p)
     return nx.to_numpy_matrix(G)
 
 
