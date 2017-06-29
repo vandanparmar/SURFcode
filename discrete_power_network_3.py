@@ -26,7 +26,7 @@ def plot_xs(x0,sol,dt,totalTime):
 	t = np.arange(0,totalTime+dt,dt)
 	labels = ["x"+str(i) for i in range(0,len(x0))]
 	for x_arr,label in zip(sol.transpose(),labels):
-		plt.plot(t,x_arr,label = label)
+		plt.plot(t,x_arr,'.-',label = label)
 	plt.legend()
 	plt.show()
 
@@ -36,15 +36,15 @@ def plot_ys(x0,sol,C,dt,totalTime):
 	y_sol = np.matmul(C,sol.transpose()).transpose()
 	labels = ["y"+str(i) for i in range(0,len(x0))]
 	for x_arr,label in zip(sol.transpose(),labels):
-		plt.plot(t,x_arr,label = label)
+		plt.plot(t,x_arr,'.-',label = label)
 	plt.legend()
 	plt.show()
 
 
 
 x0 = [1,1]
-A = [[-1,-5],[-10,1]]
-B = [[1,0],[0,1]]
+A = [[1,-5],[10,-1]]
+B = [[-1,0],[0,-1]]
 C = [[1,0.5],[0.2,1]]
 u = [1,0]
 dt = 0.1
