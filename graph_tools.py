@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 #generate a random graph with a given number of nodes and probability for each edge.
 def generate_adj_matrix(n,p):
-    G = nx.binomial_graph(n,p)
+    G = nx.connected_watts_strogatz_graph(n,3,p)
     return nx.to_numpy_matrix(G)
 
 
@@ -17,5 +17,6 @@ def show_graph(adjacency_matrix):
     gr = nx.Graph()
     gr.add_edges_from(edges)
     # nx.draw(gr) # edited to include labels
-    nx.draw_networkx(gr)
+    nx.draw(gr)
     plt.show() 
+

@@ -12,13 +12,23 @@ def ode_step(t,x,A,B,u):
 
 
 #simulator, to carry out simulation
-def network_sim(x0,A,B,C,u,dt,totalTime):
+def network_sim_integrator(x0,A,B,C,u,dt,totalTime):
 	sol = np.array([x0])
 	integrator = integrate.ode(ode_step).set_integrator("dop853")
 	integrator.set_initial_value(x0,0.0)
 	integrator.set_f_params(A,B,u)
 	while integrator.successful() and integrator.t<totalTime:
 		sol = np.append(sol,[integrator.integrate(integrator.t+dt)],axis=0)
+	return sol[1:,:]
+
+def network_sim_euler(x0,A,B,C,u,dt,totalTime):
+	sol = np.array([x0])
+	x = x0
+	integrator_t = 0
+	while integrator_t<totalTime:
+		x += ode_step(integrator_t,x,A,B,u)*dt
+		integrator_t += dt
+		sol = np.append(sol,[x],axis=0)
 	return sol[1:,:]
 
 #to plot intrinsic variables, x
@@ -47,9 +57,14 @@ A = [[1,-5],[10,-1]]
 B = [[-1,0],[0,-1]]
 C = [[1,0.5],[0.2,1]]
 u = [1,0]
-dt = 0.1
-totalTime = 10
+dt = 0.01
+totalTime = 5
 
-sol = network_sim(x0,A,B,C,u,dt,totalTime)
+sol = network_sim_euler(x0,A,B,C,u,dt,totalTime)
 plot_xs(x0,sol,dt,totalTime)
 plot_ys(x0,sol,C,dt,totalTime)
+
+sol2 = network_sim_integrator(x0,A,B,C,u,dt,totalTime)
+diff = sol-sol2
+plot_xs(x0,sol2,dt,totalTime)
+plot_xs(x0,diff,dt,totalTime)
