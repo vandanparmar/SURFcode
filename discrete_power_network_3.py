@@ -4,10 +4,14 @@ from scipy.linalg import expm
 import matplotlib.pyplot as plt
 from graph_tools import *
 
+
+#step function for integrator, of the form x' = f(x,t)
 def ode_step(t,x,A,B,u):
 	xdot = np.matmul(A,x)+np.matmul(B,u)
 	return xdot
 
+
+#simulator, to carry out simulation
 def network_sim(x0,A,B,C,u,dt,totalTime):
 	sol = np.array([x0])
 	integrator = integrate.ode(ode_step).set_integrator("dop853")
@@ -17,7 +21,7 @@ def network_sim(x0,A,B,C,u,dt,totalTime):
 		sol = np.append(sol,[integrator.integrate(integrator.t+dt)],axis=0)
 	return sol[1:,:]
 
-
+#to plot intrinsic variables, x
 def plot_xs(x0,sol,dt,totalTime):
 	t = np.arange(0,totalTime+dt,dt)
 	labels = ["x"+str(i) for i in range(0,len(x0))]
@@ -26,6 +30,7 @@ def plot_xs(x0,sol,dt,totalTime):
 	plt.legend()
 	plt.show()
 
+#to plot observed variables, y
 def plot_ys(x0,sol,C,dt,totalTime):
 	t = np.arange(0,totalTime+dt,dt)
 	y_sol = np.matmul(C,sol.transpose()).transpose()

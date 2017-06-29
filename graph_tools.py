@@ -9,8 +9,9 @@ def generate_adj_matrix(n,p):
     return nx.to_numpy_matrix(G)
 
 
+
+# given an adjacency matrix use networkx and matlpotlib to plot the graph
 def show_graph(adjacency_matrix):
-    # given an adjacency matrix use networkx and matlpotlib to plot the graph
     rows, cols = np.where(adjacency_matrix == 1)
     edges = zip(rows.tolist(), cols.tolist())
     gr = nx.Graph()
