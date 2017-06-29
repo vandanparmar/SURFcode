@@ -2,6 +2,7 @@ import numpy as np
 from scipy.integrate import ode
 from scipy.linalg import expm
 import matplotlib.pyplot as plt
+from graph_tools import *
 
 
 #analytic function of matrix differential equation
