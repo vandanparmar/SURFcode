@@ -21,6 +21,7 @@ def network_sim_integrator(x0,A,B,C,u,dt,totalTime):
 		sol = np.append(sol,[integrator.integrate(integrator.t+dt)],axis=0)
 	return sol[1:,:]
 
+#simulation using euler integration
 def network_sim_euler(x0,A,B,C,u,dt,totalTime):
 	sol = np.array([x0])
 	x = x0
