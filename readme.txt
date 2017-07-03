@@ -9,6 +9,3 @@ Current Dependencies:
 - scipy
 - matplotlib
 - networkx
-
-
-James testing…
