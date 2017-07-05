@@ -35,6 +35,7 @@ def load_from_file(filename):
 	return toReturn
 
 
+#load file from the online GUI
 def load_from_GUI(filename):
 	with open(filename) as data_file:    
 		data = json.load(data_file)
