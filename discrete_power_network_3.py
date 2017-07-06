@@ -19,7 +19,7 @@ def network_sim_integrator(x0,A,B,C,u,dt,totalTime):
 	integrator.set_f_params(A,B,u)
 	while integrator.successful() and integrator.t<totalTime:
 		sol = np.append(sol,[integrator.integrate(integrator.t+dt)],axis=0)
-	return sol
+	return sol[1:,:]
 
 #simulation using euler integration
 def network_sim_euler(x0,A,B,C,u,dt,totalTime):
@@ -30,7 +30,7 @@ def network_sim_euler(x0,A,B,C,u,dt,totalTime):
 		x += ode_step(integrator_t,x,A,B,u)*dt
 		integrator_t += dt
 		sol = np.append(sol,[x],axis=0)
-	return sol
+	return sol[1:,:]
 
 #to plot intrinsic variables, x
 def plot_xs(x0,sol,dt,totalTime):
@@ -58,7 +58,7 @@ A = [[1,-5],[10,-1]]
 B = [[-1,0],[0,-1]]
 C = [[1,0.5],[0.2,1]]
 u = [1,0]
-dt = 0.001
+dt = 0.1
 totalTime = 5
 
 sol = network_sim_euler(x0,A,B,C,u,dt,totalTime)

@@ -1,7 +1,7 @@
 import numpy as np
 
 class Generator:
-	
+
 	def __init__():
 		self.th = 0
 		self.om = 0
@@ -15,7 +15,7 @@ class Generator:
 		self.neighbours = np.array([])
 		return
 
-	def __init__(self,theta,omega):
+	def __init__(self,theta,omega):	
 		self.th = theta
 		self.om = omega
 		self.k = 1
@@ -39,7 +39,6 @@ class Generator:
 	def set_d(self,d):
 		self.d = d
 		return
-
 
 	def add_neighbour(self,n):
 		self.neighbours.append(n)
