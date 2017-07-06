@@ -9,6 +9,9 @@ def generate_adj_matrix(n,p):
 	G = nx.connected_watts_strogatz_graph(n,3,p)
 	return nx.to_numpy_matrix(G)
 
+def genereate_deg_matrix(adjacency_matrix):
+	G = nx.from_numpy_matrix(adjacency_matrix)
+	
 
 
 # given an adjacency matrix use networkx and matlpotlib to plot the graph

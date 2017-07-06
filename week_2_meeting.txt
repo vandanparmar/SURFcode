@@ -1,16 +1,16 @@
-simulate(A,B,C)
-	- simple error check on dim of A,B,C
-	- A square -> random square, print error in all cases.
-	- B, C sensible?
-	- C -> identity
-	- B -> random
+Y- simulate(A,B,C)
+Y - 	- simple error check on dim of A,B,C
+Y - 	- A square -> random square, print error in all cases.
+Y - 	- B, C sensible?
+Y - 	- C -> identity
+Y - 	- B -> random
 
-initial conditions?
+Y - initial conditions?
 
-build degree matrix
-incidence matrix
-sample and hold plot
-plot as mesh
-save xs - sensibly!
-save eigenvalues of matrix
-cvx
+- build degree matrix
+- incidence matrix
+Y - sample and hold plot
+- plot as mesh
+- save xs - sensibly!
+- save eigenvalues of matrix
+- cvx

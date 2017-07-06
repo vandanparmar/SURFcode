@@ -2,7 +2,7 @@ import numpy as np
 from scipy import integrate
 from scipy import linalg
 import matplotlib.pyplot as plt
-import graph_tools
+from graph_tools import *
 
 def random_mat(a,b):
 	toReturn = np.random.rand(a,b)
