@@ -5,12 +5,12 @@ Y - 	- B, C sensible?
 Y - 	- C -> identity
 Y - 	- B -> random
 
-Y - initial conditions?
+	Y - initial conditions?
 
-- build degree matrix
-- incidence matrix
+Y - build degree matrix
+Y - incidence matrix
 Y - sample and hold plot
-- plot as mesh
+- plot as mesh --not easy.
 - save xs - sensibly!
 - save eigenvalues of matrix
 - cvx

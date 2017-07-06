@@ -1,4 +1,4 @@
-from simulation_tools import *
+import simulation_tools as st
 
 # test_1 = simulate_cont(5,5)
 # A = np.array([[-1,0],[0,-1]])

@@ -5,13 +5,29 @@ import json
 
 
 #generate a random graph with a given number of nodes and probability for each edge.
-def generate_adj_matrix(n,p):
+def generate_rand(n,p):
 	G = nx.connected_watts_strogatz_graph(n,3,p)
-	return nx.to_numpy_matrix(G)
+	toReturn = nx.to_numpy_matrix
+#	toReturn = toReturn.view(type = np.array)
+	return toReturn
 
-def genereate_deg_matrix(adjacency_matrix):
+def generate_laplacian(adjacency_matrix):
 	G = nx.from_numpy_matrix(adjacency_matrix)
-	
+	toReturn = nx.laplacian_matrix(G)
+#	toReturn = toReturn.view(type = np.array)
+	return toReturn.toarray()
+
+def generate_degree(adjacency_matrix):
+	laplacian = generate_laplacian(adjacency_matrix)
+	toReturn = laplacian + adjacency_matrix
+#	toReturn = toReturn.view(type = np.array)
+	return toReturn
+
+def generate_incidence(adjacency_matrix):
+	G = nx.from_numpy_matrix(adjacency_matrix)
+	toReturn = nx.incidence_matrix(G)
+#	toReturn = toReturn.view(type = np.array)
+	return toReturn.toarray()
 
 
 # given an adjacency matrix use networkx and matlpotlib to plot the graph
