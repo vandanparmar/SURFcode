@@ -48,7 +48,8 @@ class simulate_cont:
 			if(np.shape(C)[0]==n):
 				self.C = np.array(C)
 			elif(np.shape(C)[1]==n):
-				self.C = np.transpose(np.array(C))
+			#	self.C = np.transpose(np.array(C))
+				print('Dimensions ',np.shape(C),' are not acceptable. You may wish to transpose this matrix.')
 			else:
 				print('Dimensions ',np.shape(C),' are not acceptable, please reenter.')
 				return
@@ -57,7 +58,8 @@ class simulate_cont:
 			if(np.shape(B)[0]==n):
 				self.B = np.array(B)
 			elif(np.shape(B)[1]==n):
-				self.B = np.transpose(np.array(B))
+			#	self.B = np.transpose(np.array(B))
+				print('Dimensions ',np.shape(B),' are not acceptable. You may wish to transpose this matrix.')
 			else:
 				print('Dimensions ',np.shape(B),' are not acceptable, please reenter.')
 				return
@@ -75,7 +77,8 @@ class simulate_cont:
 		if(np.shape(B)[0]==n):
 			self.B = np.array(B)
 		elif(np.shape(B)[1]==n):
-			self.B = np.transpose(np.array(B))
+		#	self.B = np.transpose(np.array(B))
+			print('Dimensions ',np.shape(B),' are not acceptable. You may wish to transpose this matrix.')
 		else:
 			print('Dimensions ',np.shape(B),' are not acceptable, please reenter.')
 			return
@@ -123,7 +126,7 @@ class simulate_cont:
 		y = np.zeros((len(t),self.get_C_dim()))
 		for i,time in enumerate(t):
 			x[i,:] = self.get_x(time)
-			y[i,:] = np.matmul(self.C,self.get_x(time))
+			y[i,:] = np.matmul(np.transpose(self.C),self.get_x(time))
 		labels_x = ["x"+str(i) for i in range(0,len(self.x0))]
 		labels_y = ["y"+str(i) for i in range(0,len(self.x0))]
 		f, axarr = plt.subplots(2,sharex=True)
@@ -137,8 +140,6 @@ class simulate_cont:
 		axarr[0].legend()
 		axarr[1].legend()
 		plt.show()
-
-
 
 	def plot_x(self,times):
 		start,end = times
@@ -161,7 +162,7 @@ class simulate_cont:
 		t = np.linspace(start,end,points)
 		y = np.zeros((len(t),self.get_C_dim()))
 		for i,time in enumerate(t):
-			y[i,:] = np.matmul(self.C,self.get_x(time))
+			y[i,:] = np.matmul(np.transpose(self.C),self.get_x(time))
 		labels = ["y"+str(i) for i in range(0,len(self.x0))]
 		plt.xlabel('Time')
 		plt.title('Output plot for t = '+str(start)+' to t = '+str(end)+'.')
@@ -169,6 +170,5 @@ class simulate_cont:
 			plt.plot(t,y_arr,label = label)
 		plt.legend()
 		plt.show()
-
 
 
