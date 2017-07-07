@@ -1,0 +1,114 @@
+Tools for carrying out [continuous](#continuous-simulation) and [discrete](#discrete-simulation) simulations.
+
+To utilise, in a new python file, start with,
+    
+    import sim_tools as st
+
+Current dependencies:
+- numpy
+- scipy
+- matplotlib
+- graph_tools
+- networkx
+- json
+
+## Continuous Simulation
+
+### Initialise
+    example = st.simulate_cont(n,n0,nu)
+where n is the dimension of the state, n0 is the number of outputs and nu the number of inputs. All 3 are optional, given n, all three will be set to random matrices. Given nothing requires matrices to be set using setABC.
+
+### Setting matrices
+    example.setABC(A,C,B)
+to set A, C and B respectively. B and C are optional.
+
+To set any of the three individually,
+ 
+    example.setA(A)
+    example.setB(B)
+    example.setC(C)
+
+Random matrices can be generated using,
+
+    st.random_mat(a,b)
+for a random a x b matrix.
+
+    st.random_nsd(n)
+for a random n x n negative semi-definite matrix.
+
+
+### Setting initial conditions
+Initial conditions are randomised upon initialisation, however can be set manually,
+
+    example.setx0([x0_1,x0_2,...,x0_n])
+
+### Getting values
+    
+    example.get_x(time)
+to get an individual x value.
+
+    example.get_y(time)
+to get an individual y value.
+
+### Plotting
+Set the number of points to plot in a given range,
+
+    example.set_plot_points(points)
+To plot both x and y sharing x-axis,
+
+    example.plot([start_time,end_time])
+To plot just x or y,
+
+    example.plot_x([start_time,end_time])
+
+    example.plot_y([start_time,end_time])
+
+
+## Discrete Simulation
+
+### Initialise
+    example = st.simulate_disc(n,n0,nu)
+where n is the dimension of the state, n0 is the number of outputs and nu the number of inputs. All 3 are optional, given n, all three will be set to random matrices. Given nothing requires matrices to be set using setABC.
+
+### Setting matrices
+    example.setABC(A,C,B)
+to set A, C and B respectively. B and C are optional.
+
+To set any of the three individually,
+ 
+    example.setA(A)
+    example.setB(B)
+    example.setC(C)
+
+Random matrices can be generated using,
+
+    st.random_mat(a,b)
+for a random a x b matrix.
+
+    st.random_unit(n)
+for a random n x n matrix with eigenvalues in the unit circle.
+
+### Setting initial conditions
+Initial conditions are randomised upon initialisation, however can be set manually,
+
+    example.setx0([x0_1,x0_2,...,x0_n])
+
+### Getting values
+    
+    example.get_x(k)
+to get an individual x value.
+    
+    example.get_y(k)
+to get an individual y value.
+
+### Plotting
+To plot both x and y sharing x-axis,
+
+    example.plot([start_k,end_k])
+To plot just x or y,
+
+    example.plot_x([start_k,end_k])
+
+    example.plot_y([start_k,end_k])
+
+ 
