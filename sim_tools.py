@@ -42,7 +42,6 @@ class simulate_cont:
 				self.B = random_mat(n,nu)
 			self.xo = np.random.rand(n)
 		self.plot_points = 100
-		return self
 
 	def setABC(self,A,C=None,B=None):
 		shapeA = np.shape(A)
@@ -65,8 +64,6 @@ class simulate_cont:
 			else:
 				print('Dimensions ',np.shape(C),' are not acceptable, please reenter.')
 				return
-
-		return self
 
 		if(self.C==None):
 			self.C = np.identity(n)
@@ -186,7 +183,7 @@ class simulate_cont:
 				comment = 'A eigenvalues: '+ str(eigvals)+'\nstart time: '+str(start)+'\nend time: '+str(end)
 				np.savetxt(filename,ys,header=comment)			
 
-	def plot(self,times,plot_points=None,filename=None):
+	def plot(self,times,plot_points=None,filename=None,grid=False):
 		if(self.ready()):
 			if(self.C == None):
 				self.plot_state(times,plot_points,filename)
@@ -215,6 +212,9 @@ class simulate_cont:
 			plt.xlabel('Time')
 			axarr[0].legend()
 			axarr[1].legend()
+			if(grid):
+				axarr[0].grid(color = '#a6a5a6')
+				axarr[1].grid(color = '#a6a5a6')
 			plt.show()
 			if(filename != None):
 				filename_x = 'state_'+filename
@@ -222,7 +222,7 @@ class simulate_cont:
 				self.save_state(filename_x,times,points,x)
 				self.save_output(filename_y,times,points,y)
 
-	def plot_state(self,times,plot_points=None,filename=None):
+	def plot_state(self,times,plot_points=None,filename=None,grid=False):
 		if(self.ready()):
 			if(plot_points==None):
 				plot_points=self.plot_points
@@ -239,11 +239,13 @@ class simulate_cont:
 			for x_arr,label in zip(x.transpose(),labels):
 				plt.plot(t,x_arr,label = label)
 			plt.legend()
+			if(grid):
+				plt.grid(color = '#a6a5a6')
 			plt.show()
 			if(filename != None):
 				self.save_state(filename_x,times,points,x)
 
-	def plot_output(self,times,plot_points=None,filename=None):
+	def plot_output(self,times,plot_points=None,filename=None,grid=False):
 		if(self.ready()):
 			if(plot_points==None):
 				plot_points=self.plot_points
@@ -260,6 +262,8 @@ class simulate_cont:
 			for y_arr,label in zip(y.transpose(),labels):
 				plt.plot(t,y_arr,label = label)
 			plt.legend()
+			if(grid):
+				plt.grid(color = '#a6a5a6')
 			plt.show()
 			if(filename != None):
 				self.save_output(filename_y,times,points,y)
@@ -286,7 +290,6 @@ class simulate_disc:
 			else:
 				self.B = random_mat(n,nu)
 			self.xo = np.random.rand(n)			
-		return
 
 	def setABC(self,A,C=None,B=None):
 		shapeA = np.shape(A)
@@ -417,7 +420,7 @@ class simulate_disc:
 				comment = 'A eigenvalues: '+ str(eigvals)+'\nstart k: '+str(start)+'\nend k: '+str(end)
 				np.savetxt(filename,ys,header=comment)
 
-	def plot(self,ks,filename=None):
+	def plot(self,ks,filename=None, grid=False):
 		if(self.ready()):
 			if(self.C == None):
 				self.plot_state(times,plot_points,filename)
@@ -446,6 +449,9 @@ class simulate_disc:
 			plt.xlabel('k')
 			axarr[0].legend()
 			axarr[1].legend()
+			if(grid):
+				axarr[0].grid(color = '#a6a5a6')
+				axarr[1].grid(color = '#a6a5a6')
 			plt.show()
 			if(filename!=None):
 				filename_x = 'state_'+filename
@@ -453,7 +459,7 @@ class simulate_disc:
 				self.save_state(filename_x,ks,x)
 				self.save_output(filename_y,ks,y)
 
-	def plot_state(self,ks,filename=None):
+	def plot_state(self,ks,filename=None, grid=False):
 		if(self.ready()):
 			start,end = ks
 			k = np.arange(start,end)
@@ -468,19 +474,20 @@ class simulate_disc:
 			for x_arr,label in zip(x.transpose(),labels):
 				plt.step(k,x_arr,where='post',label = label)
 			plt.legend()
+			if(grid):
+				plt.grid(color = '#a6a5a6')
 			plt.show()
 			if(filename!=None):
 				self.save_state(filename,ks,x)
 
-	def plot_output(self,ks,filename=None):
+	def plot_output(self,ks,filename=None, grid=False):
 		if(self.ready()):
 			start,end = ks
-			points = self.plot_points
 			k = np.arange(start,end)
 			y = np.zeros((len(k),self.get_C_dim()))
 			x_0 = self.get_x(start)
 			y[0,:] = np.matmul(np.transpose(self.C),x_0)
-			for i,time in enumerate(k[1,:]):
+			for i,time in enumerate(k[1:]):
 				x_0 = np.matmul(self.A,x_0)
 				y[i+1,:] = np.matmul(np.transpose(self.C),x_0)
 			labels = ["y"+str(i) for i in range(0,self.get_C_dim())]
@@ -490,6 +497,8 @@ class simulate_disc:
 			for y_arr,label in zip(y.transpose(),labels):
 				plt.step(k,y_arr,where='post',label = label)
 			plt.legend()
+			if(grid):
+				plt.grid(color = '#a6a5a6')
 			plt.show()
 			if(filename!=None):
 				self.save_state(filename,ks,y)
