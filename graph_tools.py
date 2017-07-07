@@ -8,27 +8,22 @@ import json
 def generate_rand(n,p):
 	G = nx.connected_watts_strogatz_graph(n,3,p)
 	toReturn = nx.to_numpy_matrix
-#	toReturn = toReturn.view(type = np.array)
 	return toReturn
 
 def generate_laplacian(adjacency_matrix):
 	G = nx.from_numpy_matrix(adjacency_matrix)
 	toReturn = nx.laplacian_matrix(G)
-#	toReturn = toReturn.view(type = np.array)
 	return toReturn.toarray()
 
 def generate_degree(adjacency_matrix):
 	laplacian = generate_laplacian(adjacency_matrix)
 	toReturn = laplacian + adjacency_matrix
-#	toReturn = toReturn.view(type = np.array)
 	return toReturn
 
 def generate_incidence(adjacency_matrix):
 	G = nx.from_numpy_matrix(adjacency_matrix)
 	toReturn = nx.incidence_matrix(G)
-#	toReturn = toReturn.view(type = np.array)
 	return toReturn.toarray()
-
 
 # given an adjacency matrix use networkx and matlpotlib to plot the graph
 def show_graph(adjacency_matrix):
@@ -40,11 +35,9 @@ def show_graph(adjacency_matrix):
 	nx.draw_spring(gr)
 	plt.show() 
 
-
 def save_to_file(adjacency_matrix,filename):
 	np.savetxt(filename,adjacency_matrix)
 	print('File saved!')
-
 
 def load_from_file(filename):
 	if filename.endswith('.json'):
@@ -52,7 +45,6 @@ def load_from_file(filename):
 	if filename.endswith(('.txt','.dat')):
 		toReturn = load_from_numpy(filename)
 	return toReturn
-
 
 #load file from the online GUI
 def load_from_GUI(filename):
@@ -69,10 +61,6 @@ def load_from_GUI(filename):
 		toReturn = np.clip(toReturn,0.0,1.0)
 		return toReturn
 
-
 def load_from_numpy(filename):
 	toReturn = np.loadtxt(filename)
 	return toReturn
-
-#save_to_file(load_from_GUI('test_graph_1.json'),'test_graph_2.txt')
-#show_graph(load_from_file('test_graph_1.json'))

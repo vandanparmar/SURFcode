@@ -41,7 +41,7 @@ class simulate_cont:
 			else:
 				self.B = random_mat(n,nu)
 			self.x0 = np.random.rand(n)
-		self. plot_points = 100
+		self.plot_points = 100
 
 	def setABC(self,A,C=None,B=None):
 		shapeA = np.shape(A)
@@ -146,16 +146,54 @@ class simulate_cont:
 			dim = np.shape(self.C)
 			return dim[1]
 
-	def plot(self,times):
+	def save_state(self,filename,times,plot_points=None,xs=None):	
 		if(self.ready()):
+			if(plot_points==None):
+				plot_points = self.plot_points
+			eigvals = linalg.eigvals(self.A)
 			start,end = times
-			points = self.plot_points
+			if(xs == None):
+				t = np.linspace(start,end,plot_points)
+				xs = np.zeros((len(t),len(self.x0)))
+				for i,time in enumerate(t):
+					xs[i,:] = self.get_x(time)
+			if(len(xs)>10000):
+				print('Too many states to save.')
+				return
+			else:
+				comment = 'A eigenvalues: '+ str(eigvals)+'\nstart time: '+str(start)+'\nend time: '+str(end)
+				np.savetxt(filename,xs,header=comment)	
+
+	def save_output(self,filename,times,plot_points=None,ys=None):
+		if(self.ready()):
+			if(plot_points==None):
+				plot_points = self.plot_points
+			eigvals = linalg.eigvals(self.A)
+			start,end = times
+			if(ys == None):
+				t = np.linspace(start,end,plot_points)
+				ys = np.zeros((len(t),self.get_C_dim()))
+				for i,time in enumerate(t):
+					ys[i,:] = self.get_y(time)
+			if(len(ys)>10000):
+				print('Too many outputs to save.')
+				return
+			else:
+				comment = 'A eigenvalues: '+ str(eigvals)+'\nstart time: '+str(start)+'\nend time: '+str(end)
+				np.savetxt(filename,ys,header=comment)			
+
+	def plot(self,times,plot_points=None,filename=None):
+		if(self.ready()):
+			if(plot_points==None):
+				plot_points = self.plot_points
+			start,end = times
+			points = plot_points
 			t = np.linspace(start,end,points)
 			x = np.zeros((len(t),len(self.x0)))
 			y = np.zeros((len(t),self.get_C_dim()))
 			for i,time in enumerate(t):
 				x[i,:] = self.get_x(time)
-				y[i,:] = np.matmul(np.transpose(self.C),self.get_x(time))
+				y[i,:] = self.get_y(time)
 			labels_x = ["x"+str(i) for i in range(0,len(self.x0))]
 			labels_y = ["y"+str(i) for i in range(0,self.get_C_dim())]
 			f, axarr = plt.subplots(2,sharex=True)
@@ -169,11 +207,18 @@ class simulate_cont:
 			axarr[0].legend()
 			axarr[1].legend()
 			plt.show()
+			if(filename != None):
+				filename_x = 'state_'+filename
+				filename_y = 'output_'+filename
+				self.save_state(filename_x,times,points,x)
+				self.save_output(filename_y,times,points,y)
 
-	def plot_x(self,times):
+	def plot_x(self,times,plot_points=None,filename=None):
 		if(self.ready()):
+			if(plot_points==None):
+				plot_points=self.plot_points
 			start,end = times
-			points = self.plot_points
+			points = plot_points
 			t = np.linspace(start,end,points)
 			x = np.zeros((len(t),len(self.x0)))
 			for i,time in enumerate(t):
@@ -185,11 +230,15 @@ class simulate_cont:
 				plt.plot(t,x_arr,label = label)
 			plt.legend()
 			plt.show()
+			if(filename != None):
+				self.save_state(filename_x,times,points,x)
 
-	def plot_y(self,times):
+	def plot_y(self,times,plot_points=None,filename=None):
 		if(self.ready()):
+			if(plot_points==None):
+				plot_points=self.plot_points
 			start,end = times
-			points = self.plot_points
+			points = plot_points
 			t = np.linspace(start,end,points)
 			y = np.zeros((len(t),self.get_C_dim()))
 			for i,time in enumerate(t):
@@ -201,6 +250,9 @@ class simulate_cont:
 				plt.plot(t,y_arr,label = label)
 			plt.legend()
 			plt.show()
+			if(filename != None):
+				self.save_output(filename_y,times,points,y)
+
 
 
 class simulate_disc:
@@ -320,7 +372,43 @@ class simulate_disc:
 			dim=np.shape(self.C)
 			return dim[1]		
 
-	def plot(self,ks):
+	def save_state(self,filename,ks,xs=None):
+		if(self.ready()):
+			eigvals = linalg.eigvals(self.A)
+			start,end = ks
+			if(xs==None):
+				k = np.arange(start,end)
+				xs = np.zeros((len(k),len(self.x0)))
+				xs[0,:] = self.get_x(start)
+				for i,time in enumerate(k[1:]):
+					xs[i+1,:] = np.matmul(self.A,x[i,:])
+			if(len(xs)>10000):
+				print('Too many states to save.')
+				return
+			else:
+				comment = 'A eigenvalues: '+ str(eigvals)+'\nstart k: '+str(start)+'\nend k: '+str(end)
+				np.savetxt(filename,xs,header=comment)
+
+	def save_output(self,filename,ks,ys=None):
+		if(self.ready()):
+			eigvals = linalg.eigvals(self.A)
+			start,end = ks
+			if(ys==None):
+				k = np.arange(start,end)
+				ys = np.zeros((len(k),self.get_C_dim()))
+				x_0 = self.get_x(start)
+				ys[0,:] = np.matmul(np.transpose(self.C),x_0)
+				for i,time in enumerate(k[1:]):
+					x_0 = np.matmul(self.A,xs)
+					ys[i+1,:] = np.matmul(np.transpose(self.C),x_0)
+			if(len(xs)>10000):
+				print('Too many outputs to save.')
+				return
+			else:
+				comment = 'A eigenvalues: '+ str(eigvals)+'\nstart k: '+str(start)+'\nend k: '+str(end)
+				np.savetxt(filename,ys,header=comment)
+
+	def plot(self,ks,filename=None):
 		if(self.ready()):
 			start,end = ks
 			k = np.arange(start,end)
@@ -345,8 +433,13 @@ class simulate_disc:
 			axarr[0].legend()
 			axarr[1].legend()
 			plt.show()
+			if(filename!=None):
+				filename_x = 'state_'+filename
+				filename_y = 'output_'+filename
+				self.save_state(filename_x,ks,x)
+				self.save_output(filename_y,ks,y)
 
-	def plot_x(self,ks):
+	def plot_x(self,ks,filename=None):
 		if(self.ready()):
 			start,end = ks
 			k = np.arange(start,end)
@@ -361,8 +454,10 @@ class simulate_disc:
 				plt.step(k,x_arr,where='post',label = label)
 			plt.legend()
 			plt.show()
+			if(filename!=None):
+				self.save_state(filename,ks,x)
 
-	def plot_y(self,ks):
+	def plot_y(self,ks,filename=None):
 		if(self.ready()):
 			start,end = ks
 			points = self.plot_points
@@ -380,3 +475,5 @@ class simulate_disc:
 				plt.step(k,y_arr,where='post',label = label)
 			plt.legend()
 			plt.show()
+			if(filename!=None):
+				self.save_state(filename,ks,y)

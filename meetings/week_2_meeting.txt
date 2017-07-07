@@ -11,6 +11,6 @@ Y - build degree matrix
 Y - incidence matrix
 Y - sample and hold plot
 - plot as mesh --not easy.
-- save xs - sensibly!
-- save eigenvalues of matrix
+Y - save xs - sensibly!
+Y - save eigenvalues of matrix
 - cvx
