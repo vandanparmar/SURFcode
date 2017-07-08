@@ -53,7 +53,6 @@ class simulate_cont:
 
 		else:
 			print('Please supply a square A matrix.')
-			return
 
 		if(C != None):
 			if(np.shape(C)[0]==n):
@@ -63,12 +62,10 @@ class simulate_cont:
 				print('Dimensions ',np.shape(C),' are not acceptable. You may wish to transpose this matrix.')
 			else:
 				print('Dimensions ',np.shape(C),' are not acceptable, please reenter.')
-				return
 
 		if(self.C==None):
 			self.C = np.identity(n)
 
-				
 		if(B != None):
 			if(np.shape(B)[0]==n):
 				self.B = np.array(B)
@@ -77,7 +74,7 @@ class simulate_cont:
 				print('Dimensions ',np.shape(B),' are not acceptable. You may wish to transpose this matrix.')
 			else:
 				print('Dimensions ',np.shape(B),' are not acceptable, please reenter.')
-				return
+		return self
 
 	def ready(self):
 		if(self.__ready):
@@ -95,7 +92,7 @@ class simulate_cont:
 				print('Dimensions of A not compatible, please try again.')
 		else:
 			print('Please set A, B and C using setABC.')
-		return
+		return self
 
 	def setB(self,B):
 		n = np.shape(self.A)[0]
@@ -106,7 +103,7 @@ class simulate_cont:
 			print('Dimensions ',np.shape(B),' are not acceptable. You may wish to transpose this matrix.')
 		else:
 			print('Dimensions ',np.shape(B),' are not acceptable, please reenter.')
-			return
+		return self
 
 	def setC(self,C):
 		n = np.shape(self.A)[0]
@@ -117,19 +114,19 @@ class simulate_cont:
 			print('Dimensions ',np.shape(C),' are not acceptable. You may wish to transpose this matrix.')
 		else:
 			print('Dimensions ',np.shape(C),' are not acceptable, please reenter.')
-			return
+		return self
 
 	def setx0(self,x0):
 		if(np.shape(x0)[0]==np.shape(self.A)[0]):
 			self.x0 = x0
 		else:
 			print('x0 dimensions should be (',np.shape(self.A)[0],',), please try again.')
-			return
+		return self
 
 	def set_plot_points(self,points):
 		if(points<10000):
 			self.plot_points = points
-		return
+		return self
 
 	#add integral for B when reqd.
 	def get_x(self,t):
@@ -160,10 +157,10 @@ class simulate_cont:
 					xs[i,:] = self.get_x(time)
 			if(len(xs)>10000):
 				print('Too many states to save.')
-				return
 			else:
 				comment = 'A eigenvalues: '+ str(eigvals)+'\nstart time: '+str(start)+'\nend time: '+str(end)
 				np.savetxt(filename,xs,header=comment)	
+		return self
 
 	def save_output(self,filename,times,plot_points=None,ys=None):
 		if(self.ready()):
@@ -178,15 +175,17 @@ class simulate_cont:
 					ys[i,:] = self.get_y(time)
 			if(len(ys)>10000):
 				print('Too many outputs to save.')
-				return
 			else:
 				comment = 'A eigenvalues: '+ str(eigvals)+'\nstart time: '+str(start)+'\nend time: '+str(end)
 				np.savetxt(filename,ys,header=comment)			
+		return self
+
+
 
 	def plot(self,times,plot_points=None,filename=None,grid=False):
 		if(self.ready()):
 			if(self.C == None):
-				self.plot_state(times,plot_points,filename)
+				self.plot_state(times,plot_points,filename,grid)
 				return
 			if(plot_points==None):
 				plot_points = self.plot_points
@@ -305,8 +304,7 @@ class simulate_disc:
 			self.__ready = True
 		else:
 			print('Please supply a square A matrix.')
-			return
-
+		
 		if(C != None):
 			if(np.shape(C)[0]==n):
 				self.C = np.array(C)
@@ -315,8 +313,7 @@ class simulate_disc:
 				print('Dimensions ',np.shape(C),' are not acceptable. You may wish to transpose this matrix.')
 			else:
 				print('Dimensions ',np.shape(C),' are not acceptable, please reenter.')
-				return
-
+		
 		if(B != None):
 			if(np.shape(B)[0]==n):
 				self.B = np.array(B)
@@ -325,7 +322,7 @@ class simulate_disc:
 				print('Dimensions ',np.shape(B),' are not acceptable. You may wish to transpose this matrix.')
 			else:
 				print('Dimensions ',np.shape(B),' are not acceptable, please reenter.')
-				return
+		return self
 
 	def ready(self):
 		if(self.__ready):
@@ -343,7 +340,7 @@ class simulate_disc:
 				print('Dimensions of A not compatible, please try again.')
 		else:
 			print('Please set A, B and C using setABC.')
-		return
+		return self
 
 	def setB(self,B):
 		n = np.shape(self.A)[0]
@@ -354,7 +351,7 @@ class simulate_disc:
 			print('Dimensions ',np.shape(B),' are not acceptable. You may wish to transpose this matrix.')
 		else:
 			print('Dimensions ',np.shape(B),' are not acceptable, please reenter.')
-			return
+		return self
 
 	def setC(self,C):
 		n = np.shape(self.A)[0]
@@ -365,14 +362,14 @@ class simulate_disc:
 			print('Dimensions ',np.shape(C),' are not acceptable. You may wish to transpose this matrix.')
 		else:
 			print('Dimensions ',np.shape(C),' are not acceptable, please reenter.')
-			return
+		return self
 
 	def setx0(self,x0):
 		if(np.shape(x0)[0]==np.shape(self.A)[0]):
 			self.x0 = x0
 		else:
 			print('x0 dimensions should be (',np.shape(self.A)[0],',), please try again.')
-			return
+		return self
 
 	def get_x(self,k):
 		if(self.ready()):
@@ -401,10 +398,10 @@ class simulate_disc:
 					xs[i+1,:] = np.matmul(self.A,xs[i,:])
 			if(len(xs)>10000):
 				print('Too many states to save.')
-				return
 			else:
 				comment = 'A eigenvalues: '+ str(eigvals)+'\nstart k: '+str(start)+'\nend k: '+str(end)
 				np.savetxt(filename,xs,header=comment)
+		return self
 
 	def save_output(self,filename,ks,ys=None):
 		if(self.ready()):
@@ -420,15 +417,15 @@ class simulate_disc:
 					ys[i+1,:] = np.matmul(np.transpose(self.C),x_0)
 			if(len(ys)>10000):
 				print('Too many outputs to save.')
-				return
 			else:
 				comment = 'A eigenvalues: '+ str(eigvals)+'\nstart k: '+str(start)+'\nend k: '+str(end)
 				np.savetxt(filename,ys,header=comment)
+		return self
 
 	def plot(self,ks,filename=None, grid=False):
 		if(self.ready()):
 			if(self.C == None):
-				self.plot_state(times,plot_points,filename)
+				self.plot_state(ks,filename,grid)
 				return
 			start,end = ks
 			k = np.arange(start,end)
@@ -445,14 +442,14 @@ class simulate_disc:
 			plt.subplot(2,1,1)
 			for x_arr,x_label in zip(x.transpose(),labels_x):
 				plt.step(k,x_arr,where='post',label = x_label)
-			plt.title('State plot for t = '+str(start)+' to t = '+str(end)+'.')
+			plt.title('State plot for k = '+str(start)+' to k = '+str(end)+'.')
 			plt.ylabel('State')
 			plt.xlabel('k')
 			plt.legend()
 			plt.subplot(2,1,2)
 			for y_arr,y_label in zip(y.transpose(),labels_y):
 				plt.step(k,y_arr,where='post',label = y_label)
-			plt.title('Output plot for t = '+str(start)+' to t = '+str(end)+'.')
+			plt.title('Output plot for k = '+str(start)+' to k = '+str(end)+'.')
 			plt.ylabel('Output')
 			plt.xlabel('k')
 			plt.legend()
@@ -480,7 +477,7 @@ class simulate_disc:
 			labels = ["x"+str(i) for i in range(0,len(self.x0))]
 			plt.xlabel('k')
 			plt.ylabel('State')
-			plt.title('State plot for t = '+str(start)+' to t = '+str(end)+'.')
+			plt.title('State plot for k = '+str(start)+' to k = '+str(end)+'.')
 			for x_arr,label in zip(x.transpose(),labels):
 				plt.step(k,x_arr,where='post',label = label)
 			plt.legend()
@@ -503,7 +500,7 @@ class simulate_disc:
 			labels = ["y"+str(i) for i in range(0,self.get_C_dim())]
 			plt.xlabel('k')
 			plt.ylabel('Output')
-			plt.title('Output plot for t = '+str(start)+' to t = '+str(end)+'.')
+			plt.title('Output plot for k = '+str(start)+' to k = '+str(end)+'.')
 			for y_arr,label in zip(y.transpose(),labels):
 				plt.step(k,y_arr,where='post',label = label)
 			plt.legend()

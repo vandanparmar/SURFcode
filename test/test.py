@@ -16,8 +16,15 @@ import sim_tools as st
 
 # test_1.plot([500,510])
 
-C = []
+A = [[-0.1,0.3],[0.4,-0.2]]
+C = [[1,1],[4,5]]
+
+test = st.simulate_cont(2,2,2)
+test.setA(A).setC(C)
+test.plot([1,10],grid=True)
+
+
 
 test = st.simulate_disc(2,2,2)
-print(test.C)
+test.setA(A).setC(C)
 test.plot([1,10],grid=True)
