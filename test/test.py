@@ -1,4 +1,9 @@
-import simulation_tools as st
+import sys
+import os.path
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
+
+import sim_tools as st
 
 # test_1 = simulate_cont(5,5)
 # A = np.array([[-1,0],[0,-1]])
@@ -11,5 +16,8 @@ import simulation_tools as st
 
 # test_1.plot([500,510])
 
-test = simulate_disc()
-test.plot([1,10])
+C = []
+
+test = st.simulate_disc(2,2,2)
+print(test.C)
+test.plot([1,10],grid=True)

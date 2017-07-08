@@ -22,7 +22,7 @@ def random_unit(n):
 	return toReturn
 
 class simulate_cont:
-	def __init__(self,n=None,n0=None,nu=None):
+	def __init__(self,n=None,no=None,nu=None):
 		if(n == None):
 			print('Initilising with empty matrices, please specify using "setABC".')
 			self.A = np.array([])
@@ -31,16 +31,16 @@ class simulate_cont:
 			self.__ready = False
 		else:
 			self.__ready = True
-			self.A = random_nsd(n)
-			if(n0 == None):
+			self.A = random_stable(n)
+			if(no == None):
 				self.C = None
 			else:
-				self.C = random_mat(n,n0)
+				self.C = random_mat(n,no)
 			if(nu == None):
 				self.B = None
 			else:
 				self.B = random_mat(n,nu)
-			self.xo = np.random.rand(n)
+			self.x0 = np.random.rand(n)
 		self.plot_points = 100
 
 	def setABC(self,A,C=None,B=None):
@@ -48,7 +48,7 @@ class simulate_cont:
 		if(shapeA[0] == shapeA[1]):
 			self.A = np.array(A)
 			n = shapeA[0]
-			self.xo = np.random.rand(n)
+			self.x0 = np.random.rand(n)
 			self.__ready = True
 
 		else:
@@ -90,7 +90,7 @@ class simulate_cont:
 		if(self.C != None):
 			if(np.shape(A)[0]==np.shape(self.C)[0]):
 				self.A = np.array(A)
-				self.xo = np.random.rand(np.shape(A)[0])
+				self.x0 = np.random.rand(np.shape(A)[0])
 			else:
 				print('Dimensions of A not compatible, please try again.')
 		else:
@@ -119,11 +119,11 @@ class simulate_cont:
 			print('Dimensions ',np.shape(C),' are not acceptable, please reenter.')
 			return
 
-	def setxo(self,xo):
-		if(np.shape(xo)[0]==np.shape(self.A)[0]):
-			self.xo = xo
+	def setx0(self,x0):
+		if(np.shape(x0)[0]==np.shape(self.A)[0]):
+			self.x0 = x0
 		else:
-			print('xo dimensions should be (',np.shape(self.A)[0],',), please try again.')
+			print('x0 dimensions should be (',np.shape(self.A)[0],',), please try again.')
 			return
 
 	def set_plot_points(self,points):
@@ -134,7 +134,7 @@ class simulate_cont:
 	#add integral for B when reqd.
 	def get_x(self,t):
 		if(self.ready()):
-			x = np.matmul(linalg.expm(self.A*t),self.xo)
+			x = np.matmul(linalg.expm(self.A*t),self.x0)
 			return x
 
 	def get_y(self,t):
@@ -155,7 +155,7 @@ class simulate_cont:
 			start,end = times
 			if(xs == None):
 				t = np.linspace(start,end,plot_points)
-				xs = np.zeros((len(t),len(self.xo)))
+				xs = np.zeros((len(t),len(self.x0)))
 				for i,time in enumerate(t):
 					xs[i,:] = self.get_x(time)
 			if(len(xs)>10000):
@@ -193,28 +193,33 @@ class simulate_cont:
 			start,end = times
 			points = plot_points
 			t = np.linspace(start,end,points)
-			x = np.zeros((len(t),len(self.xo)))
+			x = np.zeros((len(t),len(self.x0)))
 			y = np.zeros((len(t),self.get_C_dim()))
 			for i,time in enumerate(t):
 				x[i,:] = self.get_x(time)
 				y[i,:] = self.get_y(time)
-			labels_x = ["x"+str(i) for i in range(0,len(self.xo))]
+			labels_x = ["x"+str(i) for i in range(0,len(self.x0))]
 			labels_y = ["y"+str(i) for i in range(0,self.get_C_dim())]
-			f, axarr = plt.subplots(2,sharex=True)
+			plt.subplot(2,1,1)
 			for x_arr,x_label in zip(x.transpose(),labels_x):
-				axarr[0].plot(t,x_arr,label = x_label)
-			for y_arr,y_label in zip(y.transpose(),labels_y):
-				axarr[1].plot(t,y_arr,label = y_label)
-			axarr[0].set_title('State plot for t = '+str(start)+' to t = '+str(end)+'.')
-			axarr[1].set_title('Output plot for t = '+str(start)+' to t = '+str(end)+'.')
-			axarr[0].ylabel('State')
-			axarr[1].ylabel('Output')
+				plt.plot(t,x_arr,label = x_label)
+			plt.title('State plot for t = '+str(start)+' to t = '+str(end)+'.')
+			plt.ylabel('State')
 			plt.xlabel('Time')
-			axarr[0].legend()
-			axarr[1].legend()
+			plt.legend()
+			plt.subplot(2,1,2)
+			for y_arr,y_label in zip(y.transpose(),labels_y):
+				plt.plot(t,y_arr,label = y_label)
+			plt.title('Output plot for t = '+str(start)+' to t = '+str(end)+'.')
+			plt.ylabel('Output')
+			plt.xlabel('Time')
+			plt.legend()
 			if(grid):
-				axarr[0].grid(color = '#a6a5a6')
-				axarr[1].grid(color = '#a6a5a6')
+				plt.subplot(2,1,1)
+				plt.grid(color = '#a6a5a6')
+				plt.subplot(2,1,2)
+				plt.grid(color = '#a6a5a6')
+			plt.subplots_adjust(hspace=0.5)
 			plt.show()
 			if(filename != None):
 				filename_x = 'state_'+filename
@@ -229,10 +234,10 @@ class simulate_cont:
 			start,end = times
 			points = plot_points
 			t = np.linspace(start,end,points)
-			x = np.zeros((len(t),len(self.xo)))
+			x = np.zeros((len(t),len(self.x0)))
 			for i,time in enumerate(t):
 				x[i,:] = self.get_x(time)
-			labels = ["x"+str(i) for i in range(0,len(self.xo))]
+			labels = ["x"+str(i) for i in range(0,len(self.x0))]
 			plt.xlabel('Time')
 			plt.ylabel('State')
 			plt.title('State plot for t = '+str(start)+' to t = '+str(end)+'.')
@@ -271,7 +276,7 @@ class simulate_cont:
 
 
 class simulate_disc:
-	def __init__(self, n=None, n0=None, nu=None):
+	def __init__(self, n=None, no=None, nu=None):
 		if(n==None):
 			print('Initilising with empty matrices, please specify using "setABC".')
 			self.A = np.array([])
@@ -281,22 +286,22 @@ class simulate_disc:
 		else:
 			self.__ready = True
 			self.A = random_unit(n)
-			if(n0 == None):
+			if(no == None):
 				self.C = None
 			else:
-				self.C = random_mat(n,n0)
+				self.C = random_mat(n,no)
 			if(nu == None):
 				self.B = None
 			else:
 				self.B = random_mat(n,nu)
-			self.xo = np.random.rand(n)			
+			self.x0 = np.random.rand(n)			
 
 	def setABC(self,A,C=None,B=None):
 		shapeA = np.shape(A)
 		if(shapeA[0] == shapeA[1]):
 			self.A = np.array(A)
 			n = shapeA[0]
-			self.xo = np.random.rand(n)
+			self.x0 = np.random.rand(n)
 			self.__ready = True
 		else:
 			print('Please supply a square A matrix.')
@@ -333,7 +338,7 @@ class simulate_disc:
 		if(self.C != None):
 			if(np.shape(A)[0]==np.shape(self.C)[0]):
 				self.A = np.array(A)
-				self.xo = np.random.rand(np.shape(A)[0])
+				self.x0 = np.random.rand(np.shape(A)[0])
 			else:
 				print('Dimensions of A not compatible, please try again.')
 		else:
@@ -362,16 +367,16 @@ class simulate_disc:
 			print('Dimensions ',np.shape(C),' are not acceptable, please reenter.')
 			return
 
-	def setxo(self,xo):
-		if(np.shape(xo)[0]==np.shape(self.A)[0]):
-			self.xo = xo
+	def setx0(self,x0):
+		if(np.shape(x0)[0]==np.shape(self.A)[0]):
+			self.x0 = x0
 		else:
-			print('xo dimensions should be (',np.shape(self.A)[0],',), please try again.')
+			print('x0 dimensions should be (',np.shape(self.A)[0],',), please try again.')
 			return
 
 	def get_x(self,k):
 		if(self.ready()):
-			x = np.matmul(np.linalg.matrix_power(self.A,k),self.xo)
+			x = np.matmul(np.linalg.matrix_power(self.A,k),self.x0)
 			return x
 
 	def get_y(self,k):
@@ -390,7 +395,7 @@ class simulate_disc:
 			start,end = ks
 			if(xs==None):
 				k = np.arange(start,end)
-				xs = np.zeros((len(k),len(self.xo)))
+				xs = np.zeros((len(k),len(self.x0)))
 				xs[0,:] = self.get_x(start)
 				for i,time in enumerate(k[1:]):
 					xs[i+1,:] = np.matmul(self.A,xs[i,:])
@@ -427,7 +432,7 @@ class simulate_disc:
 				return
 			start,end = ks
 			k = np.arange(start,end)
-			x = np.zeros((len(k),len(self.xo)))
+			x = np.zeros((len(k),len(self.x0)))
 			y = np.zeros((len(k),self.get_C_dim()))
 			x[0,:] = self.get_x(start)
 			C = np.transpose(self.C)
@@ -435,23 +440,28 @@ class simulate_disc:
 			for i,time in enumerate(k[1:]):
 				x[i+1,:] = np.matmul(self.A,x[i,:])
 				y[i+1,:] = np.matmul(np.transpose(self.C),x[i+1,:])
-			labels_x = ["x"+str(i) for i in range(0,len(self.xo))]
+			labels_x = ["x"+str(i) for i in range(0,len(self.x0))]
 			labels_y = ["y"+str(i) for i in range(0,self.get_C_dim())]
-			f, axarr = plt.subplots(2,sharex=True)
+			plt.subplot(2,1,1)
 			for x_arr,x_label in zip(x.transpose(),labels_x):
-				axarr[0].step(k,x_arr,where='post',label = x_label)
-			for y_arr,y_label in zip(y.transpose(),labels_y):
-				axarr[1].step(k,y_arr,where='post',label = y_label)
-			axarr[0].set_title('State plot for t = '+str(start)+' to t = '+str(end)+'.')
-			axarr[1].set_title('Output plot for t = '+str(start)+' to t = '+str(end)+'.')
-			axarr[0].ylabel('State')
-			axarr[1].ylabel('Output')
+				plt.step(k,x_arr,where='post',label = x_label)
+			plt.title('State plot for t = '+str(start)+' to t = '+str(end)+'.')
+			plt.ylabel('State')
 			plt.xlabel('k')
-			axarr[0].legend()
-			axarr[1].legend()
+			plt.legend()
+			plt.subplot(2,1,2)
+			for y_arr,y_label in zip(y.transpose(),labels_y):
+				plt.step(k,y_arr,where='post',label = y_label)
+			plt.title('Output plot for t = '+str(start)+' to t = '+str(end)+'.')
+			plt.ylabel('Output')
+			plt.xlabel('k')
+			plt.legend()
 			if(grid):
-				axarr[0].grid(color = '#a6a5a6')
-				axarr[1].grid(color = '#a6a5a6')
+				plt.subplot(2,1,1)
+				plt.grid(color = '#a6a5a6')
+				plt.subplot(2,1,2)
+				plt.grid(color = '#a6a5a6')
+			plt.subplots_adjust(hspace = 0.5)
 			plt.show()
 			if(filename!=None):
 				filename_x = 'state_'+filename
@@ -463,11 +473,11 @@ class simulate_disc:
 		if(self.ready()):
 			start,end = ks
 			k = np.arange(start,end)
-			x = np.zeros((len(k),len(self.xo)))
+			x = np.zeros((len(k),len(self.x0)))
 			x[0,:] = self.get_x(start)
 			for i,time in enumerate(k[1:]):
 				x[i+1,:] = np.matmul(self.A,x[i,:])
-			labels = ["x"+str(i) for i in range(0,len(self.xo))]
+			labels = ["x"+str(i) for i in range(0,len(self.x0))]
 			plt.xlabel('k')
 			plt.ylabel('State')
 			plt.title('State plot for t = '+str(start)+' to t = '+str(end)+'.')
@@ -502,3 +512,4 @@ class simulate_disc:
 			plt.show()
 			if(filename!=None):
 				self.save_state(filename,ks,y)
+
