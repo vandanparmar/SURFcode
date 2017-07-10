@@ -15,9 +15,9 @@ print(test_cont.B,test_cont.C)
 test_cont = st.simulate_cont(3,4)
 test_cont = st.simulate_cont(3,4,5)
 
-A = [[-0.1,0.8],[0.6,-0.1]]
+A = [[-0.1,0.8],[0,-0.1]]
 B = [0.4,0.3]
-C = [0.2,0.4]
+C = [[0.2],[0.4]]
 x0 = [1,1]
 
 print('SetABC')

@@ -148,6 +148,24 @@ class simulate_cont:
 				toReturn = dim[1]
 			return toReturn
 
+	def get_x_set(self,times):
+		if(self.ready()):
+			xs = np.zeros((len(times),len(self.x0)))
+			for i,time in enumerate(times):
+				xs[i,:] = self.get_x(time)
+			return xs
+
+	def get_y_set(self,times,xs=None):
+		if(self.ready()):
+			if(xs==None):
+				ys = np.zeros((len(times),self.get_C_dim()))
+				for i,time in enumerate(times):
+					ys[i,:] = self.get_y(time)
+			else:
+				ys = np.matmul(np.transpose(self.C),np.transpose(xs))		
+				ys = np.transpose(ys)
+		return ys
+
 	def save_state(self,filename,times,plot_points=None,xs=None):	
 		if(self.ready()):
 			if(plot_points==None):
@@ -194,11 +212,8 @@ class simulate_cont:
 			start,end = times
 			points = plot_points
 			t = np.linspace(start,end,points)
-			x = np.zeros((len(t),len(self.x0)))
-			y = np.zeros((len(t),self.get_C_dim()))
-			for i,time in enumerate(t):
-				x[i,:] = self.get_x(time)
-				y[i,:] = self.get_y(time)
+			x = self.get_x_set(t)
+			y = self.get_y_set(t,x)
 			labels_x = ["x"+str(i) for i in range(0,len(self.x0))]
 			labels_y = ["y"+str(i) for i in range(0,self.get_C_dim())]
 			plt.subplot(2,1,1)
@@ -235,9 +250,7 @@ class simulate_cont:
 			start,end = times
 			points = plot_points
 			t = np.linspace(start,end,points)
-			x = np.zeros((len(t),len(self.x0)))
-			for i,time in enumerate(t):
-				x[i,:] = self.get_x(time)
+			x = self.get_x_set(t)
 			labels = ["x"+str(i) for i in range(0,len(self.x0))]
 			plt.xlabel('Time')
 			plt.ylabel('State')
@@ -258,9 +271,7 @@ class simulate_cont:
 			start,end = times
 			points = plot_points
 			t = np.linspace(start,end,points)
-			y = np.zeros((len(t),self.get_C_dim()))
-			for i,time in enumerate(t):
-				y[i,:] = np.matmul(np.transpose(self.C),self.get_x(time))
+			y = self.get_y_set(t)
 			labels = ["y"+str(i) for i in range(0,self.get_C_dim())]
 			plt.xlabel('Time')
 			plt.ylabel('Output')
@@ -383,6 +394,28 @@ class simulate_disc:
 			y = np.matmul(np.transpose(self.C),self.get_x(k))
 			return y
 
+	def get_x_set(self,ks):
+		if(self.ready()):
+			xs = np.zeros((len(ks),len(self.x0)))
+			xs[0,:] = self.get_x(ks[0])
+			for i,time in enumerate(ks[1:]):
+				xs[i+1,:] = np.matmul(self.A,xs[i,:])
+		return xs
+
+	def get_y_set(self,ks,xs=None):
+		if(self.ready()):
+			if(xs==None):
+				ys = np.zeros((len(ks),self.get_C_dim()))
+				x_0 = self.get_x(ks[0])
+				ys[0,:] = np.matmul(np.transpose(self.C),x_0)
+				for i,time in enumerate(ks[1:]):
+					x_0 = np.matmul(self.A,x_0)
+					ys[i+1,:] = np.matmul(np.transpose(self.C),x_0)
+			else:
+				ys = np.matmul(np.transpose(self.C),np.transpose(xs))		
+				ys = np.transpose(ys)
+		return ys
+
 	def get_C_dim(self):
 		if(self.ready()):
 			dim = np.shape(self.C)
@@ -435,14 +468,8 @@ class simulate_disc:
 				return
 			start,end = ks
 			k = np.arange(start,end)
-			x = np.zeros((len(k),len(self.x0)))
-			y = np.zeros((len(k),self.get_C_dim()))
-			x[0,:] = self.get_x(start)
-			C = np.transpose(self.C)
-			y[0,:] = np.matmul(C,x[0,:])
-			for i,time in enumerate(k[1:]):
-				x[i+1,:] = np.matmul(self.A,x[i,:])
-				y[i+1,:] = np.matmul(np.transpose(self.C),x[i+1,:])
+			x = self.get_x_set(k)
+			y = self.get_y_set(k,x)
 			labels_x = ["x"+str(i) for i in range(0,len(self.x0))]
 			labels_y = ["y"+str(i) for i in range(0,self.get_C_dim())]
 			plt.subplot(2,1,1)
@@ -476,10 +503,7 @@ class simulate_disc:
 		if(self.ready()):
 			start,end = ks
 			k = np.arange(start,end)
-			x = np.zeros((len(k),len(self.x0)))
-			x[0,:] = self.get_x(start)
-			for i,time in enumerate(k[1:]):
-				x[i+1,:] = np.matmul(self.A,x[i,:])
+			x = self.get_x_set(k)
 			labels = ["x"+str(i) for i in range(0,len(self.x0))]
 			plt.xlabel('k')
 			plt.ylabel('State')
@@ -497,12 +521,7 @@ class simulate_disc:
 		if(self.ready()):
 			start,end = ks
 			k = np.arange(start,end)
-			y = np.zeros((len(k),self.get_C_dim()))
-			x_0 = self.get_x(start)
-			y[0,:] = np.matmul(np.transpose(self.C),x_0)
-			for i,time in enumerate(k[1:]):
-				x_0 = np.matmul(self.A,x_0)
-				y[i+1,:] = np.matmul(np.transpose(self.C),x_0)
+			y = self.get_y_set(k)
 			labels = ["y"+str(i) for i in range(0,self.get_C_dim())]
 			plt.xlabel('k')
 			plt.ylabel('Output')
