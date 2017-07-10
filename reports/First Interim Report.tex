@@ -1,0 +1,37 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[margin=1in]{geometry}
+
+\begin{document}
+
+\title{First Interim Report}
+\author{Vandan Parmar \\
+Supervisor: Steven Low, Co-supervisor: James Anderson}
+\maketitle
+\section{Background and Project}
+As sensors and actuators have become increasingly small, their number has increased rapidly. Combined with the internet, this has resulted in many large scale distributed networks, such as the Internet of Things, the smart grid and automated motorway systems. However, designing controllers for such networks is extremely difficult. A centralised single controller requires large amounts of information transferral and therefore a large time delay on the feedback loop. On the other hand, localised controllers will often not produce an optimal solution and can occasionally even be unstable.
+
+In \cite{Wang2017} a System Level Approach for controller synthesis is described. This decomposes the global optimisation problem into locally solvable subproblems, in such a way that the complexity of the resulting synthesis method is $\mathcal{O}(1)$ with respect to the size of the global system. The aim of this project is to implement this method into an easy to use toolbox to solve general problems of this form.
+
+\section{Current Progress}
+A basic toolbox has been implemented. This solves a system of the form, 
+$$ \dot{x} = \underline{A}x$$
+
+
+in both a discrete and continuous case. It also enables easy plotting of the inputs and outputs of the system. Generated data can then be saved to a file for future reference. 
+
+Deciding the format for the toolbox was a difficult initial decision. A variety of formats were considered, such as a general run code using configuration files specifying the details and a functional toolbox, containing functions to assist the computation of simulations of this kind. An object oriented approach was chosen as it enables all components of the simulation to be held together, meaning variables needn’t be passed repetitively.
+
+\section{Goals}
+The immediate goals are to integrate a simulation for a system of the form,
+$$ \dot{x} = \underline{A}x + \underline{B}u$$
+
+into the current toolbox. The long term goals are to implement and test the controller design method.
+
+\bibliographystyle{unsrt}
+\bibliography{first_interim_bib}
+
+\end{document}
