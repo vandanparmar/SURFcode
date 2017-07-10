@@ -142,7 +142,11 @@ class simulate_cont:
 	def get_C_dim(self):
 		if(self.ready()):
 			dim = np.shape(self.C)
-			return dim[1]
+			if(len(dim)==1):
+				toReturn = 1
+			else:
+				toReturn = dim[1]
+			return toReturn
 
 	def save_state(self,filename,times,plot_points=None,xs=None):	
 		if(self.ready()):
@@ -179,8 +183,6 @@ class simulate_cont:
 				comment = 'A eigenvalues: '+ str(eigvals)+'\nstart time: '+str(start)+'\nend time: '+str(end)
 				np.savetxt(filename,ys,header=comment)			
 		return self
-
-
 
 	def plot(self,times,plot_points=None,filename=None,grid=False):
 		if(self.ready()):
@@ -383,8 +385,12 @@ class simulate_disc:
 
 	def get_C_dim(self):
 		if(self.ready()):
-			dim=np.shape(self.C)
-			return dim[1]		
+			dim = np.shape(self.C)
+			if(len(dim)==1):
+				toReturn = 1
+			else:
+				toReturn = dim[1]
+			return toReturn
 
 	def save_state(self,filename,ks,xs=None):
 		if(self.ready()):
