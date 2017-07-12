@@ -41,7 +41,7 @@ def plot_sio(self,times,disc,grid, x=None, y=None,u=None):
 	for index,var in enumerate(plot_type):
 		labels = [var[0]+str(i) for i in range(1,var[2]+1)]
 		plt.subplot(plot_tot,1,index+1)
-		for arr,label in zip(eval(var[0]).transpose(),labels):
+		for arr,label in zip(eval(var[0]),labels):
 			if(disc):
 				plt.step(times,arr,label=label)
 			else:
@@ -76,7 +76,7 @@ class simulate_cont:
 				self.B = None
 			else:
 				self.B = random_mat(n,nu)
-			self.x0 = np.random.rand(n)
+			self.x0 = np.random.rand(1,n)
 		self.plot_points = 100
 
 	def setABC(self,A,C=None,B=None):
@@ -90,17 +90,14 @@ class simulate_cont:
 		else:
 			print('Please supply a square A matrix.')
 
-		if(C  is not None):
-			if(np.shape(C)[0]==n):
-				self.C = np.array(C)
-			elif(np.shape(C)[1]==n):
+		if(C is not None):
+			if(np.shape(C)[1]==n):
+				self.C = C
+			elif(np.shape(C)[0]==n):
 			#	self.C = np.transpose(np.array(C))
 				print('Dimensions ',np.shape(C),' are not acceptable. You may wish to transpose this matrix.')
 			else:
 				print('Dimensions ',np.shape(C),' are not acceptable, please reenter.')
-
-		if(self.C is None):
-			self.C = np.identity(n)
 
 		if(B  is not None):
 			if(np.shape(B)[0]==n):
@@ -121,9 +118,9 @@ class simulate_cont:
 
 	def setA(self,A):
 		if(self.C  is not None):
-			if(np.shape(A)[0]==np.shape(self.C)[0]):
+			if(np.shape(A)[0]==np.shape(self.C)[1]):
 				self.A = np.array(A)
-				self.x0 = np.random.rand(np.shape(A)[0])
+				self.x0 = np.random.rand(np.shape(A)[0],1)
 			else:
 				print('Dimensions of A not compatible, please try again.')
 		else:
@@ -143,9 +140,9 @@ class simulate_cont:
 
 	def setC(self,C):
 		n = np.shape(self.A)[0]
-		if(np.shape(C)[0]==n):
+		if(np.shape(C)[1]==n):
 			self.C = np.array(C)
-		elif(np.shape(C)[1]==n):
+		elif(np.shape(C)[0]==n):
 		#	self.C = np.transpose(np.array(C))
 			print('Dimensions ',np.shape(C),' are not acceptable. You may wish to transpose this matrix.')
 		else:
@@ -153,10 +150,10 @@ class simulate_cont:
 		return self
 
 	def setx0(self,x0):
-		if(np.shape(x0)[0]==np.shape(self.A)[0]):
+		if(np.shape(x0)==(np.shape(self.A)[0],1)):
 			self.x0 = x0
 		else:
-			print('x0 dimensions should be (',np.shape(self.A)[0],',), please try again.')
+			print('x0 dimensions should be',(np.shape(self.A)[0],1),', please try again.')
 		return self
 
 	def set_plot_points(self,points):
@@ -171,7 +168,7 @@ class simulate_cont:
 
 	def get_y(self,t):
 		if(self.ready()):
-			y = np.matmul(np.transpose(self.C),self.get_x(t))
+			y = np.matmul(self.C,self.get_x(t))
 			return y
 
 	def get_C_dim(self):
@@ -180,25 +177,24 @@ class simulate_cont:
 			if(len(dim)==1):
 				toReturn = 1
 			else:
-				toReturn = dim[1]
+				toReturn = dim[0]
 			return toReturn
 
 	def get_x_set(self,times):
 		if(self.ready()):
-			xs = np.zeros((len(times),len(self.x0)))
-			for i,time in enumerate(times):
-				xs[i,:] = self.get_x(time)
+			xs = self.get_x(times[0])
+			for time in times[1:]:
+				xs = np.append(xs,self.get_x(time),axis=1)
 			return xs
 
 	def get_y_set(self,times,xs=None):
 		if(self.ready()):
 			if(xs is None):
-				ys = np.zeros((len(times),self.get_C_dim()))
-				for i,time in enumerate(times):
-					ys[i,:] = self.get_y(time)
+				ys = self.get_y(times[0])
+				for time in times[1:]:
+					ys = np.append(ys,self.get_y(time),axis=1)
 			else:
-				ys = np.matmul(np.transpose(self.C),np.transpose(xs))		
-				ys = np.transpose(ys)
+				ys = np.matmul(self.C,xs)		
 		return ys
 
 	def save_state(self,filename,times,plot_points=None,xs=None):	
@@ -208,10 +204,7 @@ class simulate_cont:
 			eigvals = linalg.eigvals(self.A)
 			start,end = times
 			if(xs is None):
-				t = np.linspace(start,end,plot_points)
-				xs = np.zeros((len(t),len(self.x0)))
-				for i,time in enumerate(t):
-					xs[i,:] = self.get_x(time)
+				self.get_x_set(times)
 			if(len(xs)>10000):
 				print('Too many states to save.')
 			else:
@@ -226,10 +219,7 @@ class simulate_cont:
 			eigvals = linalg.eigvals(self.A)
 			start,end = times
 			if(ys is None):
-				t = np.linspace(start,end,plot_points)
-				ys = np.zeros((len(t),self.get_C_dim()))
-				for i,time in enumerate(t):
-					ys[i,:] = self.get_y(time)
+				self.get_y_set(times)
 			if(len(ys)>10000):
 				print('Too many outputs to save.')
 			else:
@@ -249,6 +239,11 @@ class simulate_cont:
 			t = np.linspace(start,end,points)
 			x = self.get_x_set(t)
 			y = self.get_y_set(t,x)
+			print(np.shape(x))
+			print(x)
+			print(np.shape(y))
+			print(y)
+			
 			plot_sio(self,t,False,grid,x,y)
 			if(filename  is not None):
 				filename_x = 'state_'+filename
@@ -314,9 +309,9 @@ class simulate_disc:
 			print('Please supply a square A matrix.')
 		
 		if(C  is not None):
-			if(np.shape(C)[0]==n):
+			if(np.shape(C)[1]==n):
 				self.C = np.array(C)
-			elif(np.shape(C)[1]==n):
+			elif(np.shape(C)[0]==n):
 			#	self.C = np.transpose(np.array(C))
 				print('Dimensions ',np.shape(C),' are not acceptable. You may wish to transpose this matrix.')
 			else:
@@ -341,7 +336,7 @@ class simulate_disc:
 
 	def setA(self,A):
 		if(self.C  is not None):
-			if(np.shape(A)[0]==np.shape(self.C)[0]):
+			if(np.shape(A)[0]==np.shape(self.C)[1]):
 				self.A = np.array(A)
 				self.x0 = np.random.rand(np.shape(A)[0])
 			else:
@@ -363,9 +358,9 @@ class simulate_disc:
 
 	def setC(self,C):
 		n = np.shape(self.A)[0]
-		if(np.shape(C)[0]==n):
+		if(np.shape(C)[1]==n):
 			self.C = np.array(C)
-		elif(np.shape(C)[1]==n):
+		elif(np.shape(C)[0]==n):
 		#	self.C = np.transpose(np.array(C))
 			print('Dimensions ',np.shape(C),' are not acceptable. You may wish to transpose this matrix.')
 		else:
@@ -373,10 +368,10 @@ class simulate_disc:
 		return self
 
 	def setx0(self,x0):
-		if(np.shape(x0)[0]==np.shape(self.A)[0]):
+		if(np.shape(x0)==(np.shape(self.A)[0],1)):
 			self.x0 = x0
 		else:
-			print('x0 dimensions should be (',np.shape(self.A)[0],',), please try again.')
+			print('x0 dimensions should be',(np.shape(self.A)[0],1),', please try again.')
 		return self
 
 	def get_x(self,k):
@@ -386,29 +381,28 @@ class simulate_disc:
 
 	def get_y(self,k):
 		if(self.ready()):
-			y = np.matmul(np.transpose(self.C),self.get_x(k))
+			y = np.matmul(self.C,self.get_x(k))
 			return y
 
 	def get_x_set(self,ks):
 		if(self.ready()):
-			xs = np.zeros((len(ks),len(self.x0)))
-			xs[0,:] = self.get_x(ks[0])
-			for i,time in enumerate(ks[1:]):
-				xs[i+1,:] = np.matmul(self.A,xs[i,:])
+			xs = self.get_x(ks[0])
+			x0 = xs
+			for time in ks[1:]:
+				x0 = np.matmul(self.A,x0)
+				xs = np.append(xs,x0,axis=1)
 		return xs
 
 	def get_y_set(self,ks,xs=None):
 		if(self.ready()):
 			if(xs is None):
-				ys = np.zeros((len(ks),self.get_C_dim()))
 				x_0 = self.get_x(ks[0])
-				ys[0,:] = np.matmul(np.transpose(self.C),x_0)
-				for i,time in enumerate(ks[1:]):
+				ys = np.matmul(self.C,x_0)
+				for time in ks[1:]:
 					x_0 = np.matmul(self.A,x_0)
-					ys[i+1,:] = np.matmul(np.transpose(self.C),x_0)
+					ys = np.append(ys,np.matmul(self.C,x_0),axis=1)
 			else:
-				ys = np.matmul(np.transpose(self.C),np.transpose(xs))		
-				ys = np.transpose(ys)
+				ys = np.matmul(self.C,xs)		
 		return ys
 
 	def get_C_dim(self):
@@ -417,7 +411,7 @@ class simulate_disc:
 			if(len(dim)==1):
 				toReturn = 1
 			else:
-				toReturn = dim[1]
+				toReturn = dim[0]
 			return toReturn
 
 	def save_state(self,filename,ks,xs=None):
@@ -425,11 +419,7 @@ class simulate_disc:
 			eigvals = linalg.eigvals(self.A)
 			start,end = ks
 			if(xs is None):
-				k = np.arange(start,end)
-				xs = np.zeros((len(k),len(self.x0)))
-				xs[0,:] = self.get_x(start)
-				for i,time in enumerate(k[1:]):
-					xs[i+1,:] = np.matmul(self.A,xs[i,:])
+				self.get_x_set(ks)
 			if(len(xs)>10000):
 				print('Too many states to save.')
 			else:
@@ -442,13 +432,7 @@ class simulate_disc:
 			eigvals = linalg.eigvals(self.A)
 			start,end = ks
 			if(ys is None):
-				k = np.arange(start,end)
-				ys = np.zeros((len(k),self.get_C_dim()))
-				x_0 = self.get_x(start)
-				ys[0,:] = np.matmul(np.transpose(self.C),x_0)
-				for i,time in enumerate(k[1:]):
-					x_0 = np.matmul(self.A,x_0)
-					ys[i+1,:] = np.matmul(np.transpose(self.C),x_0)
+				self.get_y_set(ks)
 			if(len(ys)>10000):
 				print('Too many outputs to save.')
 			else:
@@ -462,7 +446,7 @@ class simulate_disc:
 				self.plot_state(ks,filename,grid)
 				return
 			start,end = ks
-			k = np.arange(start,end)
+			k = np.arange(start,end+1)
 			x = self.get_x_set(k)
 			y = self.get_y_set(k,x)
 			plot_sio(self,k,True,grid,x=x,y=y)
@@ -475,7 +459,7 @@ class simulate_disc:
 	def plot_state(self,ks,filename=None, grid=False):
 		if(self.ready()):
 			start,end = ks
-			k = np.arange(start,end)
+			k = np.arange(start,end+1)
 			x = self.get_x_set(k)
 			plot_sio(self,k,True,grid,x=x)
 			if(filename is not None):
@@ -484,7 +468,7 @@ class simulate_disc:
 	def plot_output(self,ks,filename=None, grid=False):
 		if(self.ready()):
 			start,end = ks
-			k = np.arange(start,end)
+			k = np.arange(start,end+1)
 			y = self.get_y_set(k)
 			plot_sio(self,k,True,grid,y=y)
 			if(filename is not None):

@@ -4,7 +4,7 @@ sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 
 import sim_tools as st
-
+import numpy as np
 #continuous
 print('\n\nContinuous')
 
@@ -17,11 +17,10 @@ test_cont = st.simulate_cont(3,4,5)
 
 A = [[-0.1,0.8],[0,-0.1]]
 B = [0.4,0.3]
-C = [[0.2],[0.4]]
-x0 = [1,1]
-
+C = [[0.2,0.4]]
+x0 = [[1],[1]]
 print('SetABC')
-test_cont = st.simulate_cont().setABC(A,B,C)
+test_cont = st.simulate_cont().setABC(A,C=C,B=B)
 test_cont.setA(A)
 test_cont.setB(B)
 test_cont.setC(C)
@@ -55,7 +54,7 @@ test_disc = st.simulate_disc(3,4)
 test_disc = st.simulate_disc(3,4,5)
 
 print('SetABC')
-test_disc = st.simulate_disc().setABC(A,B,C)
+test_disc = st.simulate_disc().setABC(A,B=B,C=C)
 test_disc.setA(A)
 test_disc.setB(B)
 test_disc.setC(C)
