@@ -23,7 +23,7 @@ def random_unit(n):
 
 class simulate_cont:
 	def __init__(self,n=None,no=None,nu=None):
-		if(n == None):
+		if(n is None):
 			print('Initilising with empty matrices, please specify using "setABC".')
 			self.A = np.array([])
 			self.B = None
@@ -32,11 +32,11 @@ class simulate_cont:
 		else:
 			self.__ready = True
 			self.A = random_stable(n)
-			if(no == None):
+			if(no is None):
 				self.C = None
 			else:
 				self.C = random_mat(n,no)
-			if(nu == None):
+			if(nu is None):
 				self.B = None
 			else:
 				self.B = random_mat(n,nu)
@@ -54,7 +54,7 @@ class simulate_cont:
 		else:
 			print('Please supply a square A matrix.')
 
-		if(C != None):
+		if(C  is not None):
 			if(np.shape(C)[0]==n):
 				self.C = np.array(C)
 			elif(np.shape(C)[1]==n):
@@ -63,10 +63,10 @@ class simulate_cont:
 			else:
 				print('Dimensions ',np.shape(C),' are not acceptable, please reenter.')
 
-		if(self.C==None):
+		if(self.C is None):
 			self.C = np.identity(n)
 
-		if(B != None):
+		if(B  is not None):
 			if(np.shape(B)[0]==n):
 				self.B = np.array(B)
 			elif(np.shape(B)[1]==n):
@@ -84,7 +84,7 @@ class simulate_cont:
 			return False
 
 	def setA(self,A):
-		if(self.C != None):
+		if(self.C  is not None):
 			if(np.shape(A)[0]==np.shape(self.C)[0]):
 				self.A = np.array(A)
 				self.x0 = np.random.rand(np.shape(A)[0])
@@ -128,7 +128,6 @@ class simulate_cont:
 			self.plot_points = points
 		return self
 
-	#add integral for B when reqd.
 	def get_x(self,t):
 		if(self.ready()):
 			x = np.matmul(linalg.expm(self.A*t),self.x0)
@@ -157,7 +156,7 @@ class simulate_cont:
 
 	def get_y_set(self,times,xs=None):
 		if(self.ready()):
-			if(xs==None):
+			if(xs is None):
 				ys = np.zeros((len(times),self.get_C_dim()))
 				for i,time in enumerate(times):
 					ys[i,:] = self.get_y(time)
@@ -168,11 +167,11 @@ class simulate_cont:
 
 	def save_state(self,filename,times,plot_points=None,xs=None):	
 		if(self.ready()):
-			if(plot_points==None):
+			if(plot_points is None):
 				plot_points = self.plot_points
 			eigvals = linalg.eigvals(self.A)
 			start,end = times
-			if(xs == None):
+			if(xs is None):
 				t = np.linspace(start,end,plot_points)
 				xs = np.zeros((len(t),len(self.x0)))
 				for i,time in enumerate(t):
@@ -186,11 +185,11 @@ class simulate_cont:
 
 	def save_output(self,filename,times,plot_points=None,ys=None):
 		if(self.ready()):
-			if(plot_points==None):
+			if(plot_points is None):
 				plot_points = self.plot_points
 			eigvals = linalg.eigvals(self.A)
 			start,end = times
-			if(ys == None):
+			if(ys is None):
 				t = np.linspace(start,end,plot_points)
 				ys = np.zeros((len(t),self.get_C_dim()))
 				for i,time in enumerate(t):
@@ -204,10 +203,10 @@ class simulate_cont:
 
 	def plot(self,times,plot_points=None,filename=None,grid=False):
 		if(self.ready()):
-			if(self.C == None):
+			if(self.C is None):
 				self.plot_state(times,plot_points,filename,grid)
 				return
-			if(plot_points==None):
+			if(plot_points is None):
 				plot_points = self.plot_points
 			start,end = times
 			points = plot_points
@@ -237,7 +236,7 @@ class simulate_cont:
 				plt.grid(color = '#a6a5a6')
 			plt.subplots_adjust(hspace=0.5)
 			plt.show()
-			if(filename != None):
+			if(filename  is not None):
 				filename_x = 'state_'+filename
 				filename_y = 'output_'+filename
 				self.save_state(filename_x,times,points,x)
@@ -245,7 +244,7 @@ class simulate_cont:
 
 	def plot_state(self,times,plot_points=None,filename=None,grid=False):
 		if(self.ready()):
-			if(plot_points==None):
+			if(plot_points is None):
 				plot_points=self.plot_points
 			start,end = times
 			points = plot_points
@@ -261,12 +260,12 @@ class simulate_cont:
 			if(grid):
 				plt.grid(color = '#a6a5a6')
 			plt.show()
-			if(filename != None):
+			if(filename  is not None):
 				self.save_state(filename_x,times,points,x)
 
 	def plot_output(self,times,plot_points=None,filename=None,grid=False):
 		if(self.ready()):
-			if(plot_points==None):
+			if(plot_points is None):
 				plot_points=self.plot_points
 			start,end = times
 			points = plot_points
@@ -282,14 +281,14 @@ class simulate_cont:
 			if(grid):
 				plt.grid(color = '#a6a5a6')
 			plt.show()
-			if(filename != None):
+			if(filename  is not None):
 				self.save_output(filename_y,times,points,y)
 
-
+		
 
 class simulate_disc:
 	def __init__(self, n=None, no=None, nu=None):
-		if(n==None):
+		if(n is None):
 			print('Initilising with empty matrices, please specify using "setABC".')
 			self.A = np.array([])
 			self.B = None
@@ -298,11 +297,11 @@ class simulate_disc:
 		else:
 			self.__ready = True
 			self.A = random_unit(n)
-			if(no == None):
+			if(no is None):
 				self.C = None
 			else:
 				self.C = random_mat(n,no)
-			if(nu == None):
+			if(nu is None):
 				self.B = None
 			else:
 				self.B = random_mat(n,nu)
@@ -318,7 +317,7 @@ class simulate_disc:
 		else:
 			print('Please supply a square A matrix.')
 		
-		if(C != None):
+		if(C  is not None):
 			if(np.shape(C)[0]==n):
 				self.C = np.array(C)
 			elif(np.shape(C)[1]==n):
@@ -327,7 +326,7 @@ class simulate_disc:
 			else:
 				print('Dimensions ',np.shape(C),' are not acceptable, please reenter.')
 		
-		if(B != None):
+		if(B  is not None):
 			if(np.shape(B)[0]==n):
 				self.B = np.array(B)
 			elif(np.shape(B)[1]==n):
@@ -345,7 +344,7 @@ class simulate_disc:
 			return False
 
 	def setA(self,A):
-		if(self.C != None):
+		if(self.C  is not None):
 			if(np.shape(A)[0]==np.shape(self.C)[0]):
 				self.A = np.array(A)
 				self.x0 = np.random.rand(np.shape(A)[0])
@@ -404,7 +403,7 @@ class simulate_disc:
 
 	def get_y_set(self,ks,xs=None):
 		if(self.ready()):
-			if(xs==None):
+			if(xs is None):
 				ys = np.zeros((len(ks),self.get_C_dim()))
 				x_0 = self.get_x(ks[0])
 				ys[0,:] = np.matmul(np.transpose(self.C),x_0)
@@ -429,7 +428,7 @@ class simulate_disc:
 		if(self.ready()):
 			eigvals = linalg.eigvals(self.A)
 			start,end = ks
-			if(xs==None):
+			if(xs is None):
 				k = np.arange(start,end)
 				xs = np.zeros((len(k),len(self.x0)))
 				xs[0,:] = self.get_x(start)
@@ -446,7 +445,7 @@ class simulate_disc:
 		if(self.ready()):
 			eigvals = linalg.eigvals(self.A)
 			start,end = ks
-			if(ys==None):
+			if(ys is None):
 				k = np.arange(start,end)
 				ys = np.zeros((len(k),self.get_C_dim()))
 				x_0 = self.get_x(start)
@@ -463,7 +462,7 @@ class simulate_disc:
 
 	def plot(self,ks,filename=None, grid=False):
 		if(self.ready()):
-			if(self.C == None):
+			if(self.C is None):
 				self.plot_state(ks,filename,grid)
 				return
 			start,end = ks
@@ -493,7 +492,7 @@ class simulate_disc:
 				plt.grid(color = '#a6a5a6')
 			plt.subplots_adjust(hspace = 0.5)
 			plt.show()
-			if(filename!=None):
+			if(filename is not None):
 				filename_x = 'state_'+filename
 				filename_y = 'output_'+filename
 				self.save_state(filename_x,ks,x)
@@ -514,7 +513,7 @@ class simulate_disc:
 			if(grid):
 				plt.grid(color = '#a6a5a6')
 			plt.show()
-			if(filename!=None):
+			if(filename is not None):
 				self.save_state(filename,ks,x)
 
 	def plot_output(self,ks,filename=None, grid=False):
@@ -532,6 +531,6 @@ class simulate_disc:
 			if(grid):
 				plt.grid(color = '#a6a5a6')
 			plt.show()
-			if(filename!=None):
+			if(filename is not None):
 				self.save_state(filename,ks,y)
 

@@ -4,7 +4,8 @@ sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 
 import sim_tools as st
-
+from scipy import integrate
+import numpy as np
 # test_1 = simulate_cont(5,5)
 # A = np.array([[-1,0],[0,-1]])
 # B = np.array([[1,0],[1,0],[1,0],[1,0]])
@@ -16,15 +17,27 @@ import sim_tools as st
 
 # test_1.plot([500,510])
 
-A = [[-0.1,0.3],[0.4,-0.2]]
-C = [[1,1],[4,5]]
+# A = [[-0.1,0.3],[0.4,-0.2]]
+# C = [[1,1],[4,5]]
 
-test = st.simulate_cont(2,2,2)
-test.setA(A).setC(C)
-test.plot([1,10],grid=True)
+# test = st.simulate_cont(2,2,2)
+# test.setA(A).setC(C)
+# test.plot([1,10],grid=True)
+def input(u):
+	if (u[0]>=0):
+		return 1
+	else:
+		return -1
 
+def func(x,input):
+	toReturn = np.array([np.sin(x),np.cos(x)])
+	toReturn += input(toReturn)
+	return toReturn
 
+y = integrate.quad(func,0,2*np.pi,args=input)
+print(y)
 
-test = st.simulate_disc(2,2,2)
-test.setA(A).setC(C)
-test.plot([1,10],grid=True)
+# test = st.simulate_disc(2,2,2)
+# test.setA(A).setC(C)
+# test.plot([1,10],grid=True)
+

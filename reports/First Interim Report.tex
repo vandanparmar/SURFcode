@@ -12,22 +12,21 @@
 Supervisor: Steven Low, Co-supervisor: James Anderson}
 \maketitle
 \section{Background and Project}
-As sensors and actuators have become increasingly small, their number has increased rapidly. Combined with the internet, this has resulted in many large scale distributed networks, such as the Internet of Things, the smart grid and automated motorway systems. However, designing controllers for such networks is extremely difficult. A centralised single controller requires large amounts of information transferral and therefore a large time delay on the feedback loop. On the other hand, localised controllers will often not produce an optimal solution and can occasionally even be unstable.
+As sensors and actuators have become increasingly small, their number has increased rapidly. Combined with the internet, this has resulted in many large scale distributed networks, such as the Internet of Things, the smart grid and automated motorway systems. However, designing controllers for such networks is extremely difficult. To compute the controller for a large centralized system is difficult and this assumes that all information about the system is available immediately. It also assumes that computation of the control action can be computed and communicated back to the network quickly. Clearly this is not the case in many of the large networks described above. Decentralised controllers don't have full information or act using delayed information, thus outputs can be sub optimal. In many cases the controller itself is difficult to construct, few algorithms exist none of which are scalable.
 
-In \cite{Wang2017} a System Level Approach for controller synthesis is described. This decomposes the global optimisation problem into locally solvable subproblems, in such a way that the complexity of the resulting synthesis method is $\mathcal{O}(1)$ with respect to the size of the global system. The aim of this project is to implement this method into an easy to use toolbox to solve general problems of this form.
+A System Level Approach \cite{Wang2017} is a new method for decentralized control that scales well and is decentralized. This decomposes the global optimisation problem into locally solvable subproblems, in such a way that the complexity of the resulting synthesis method is $\mathcal{O}(1)$ with respect to the size of the global system.\textit{ For a power system this is particularly important, as this describes the most efficient power flow across the network.} The aim of this project is to implement this method into an easy to use toolbox to solve problems to do with the scalable control of power network.
 
 \section{Current Progress}
-A basic toolbox has been implemented. This solves a system of the form, 
-$$ \dot{x} = \underline{A}x$$
-
+A basic toolbox has been implemented. This simulates a system of the form, 
+$$\dot{x} = \textbf{A}x \,: \quad x \in \mathbb{R}^{n}$$
 
 in both a discrete and continuous case. It also enables easy plotting of the inputs and outputs of the system. Generated data can then be saved to a file for future reference. 
 
-Deciding the format for the toolbox was a difficult initial decision. A variety of formats were considered, such as a general run code using configuration files specifying the details and a functional toolbox, containing functions to assist the computation of simulations of this kind. An object oriented approach was chosen as it enables all components of the simulation to be held together, meaning variables needn’t be passed repetitively.
+Deciding the format for the toolbox was a difficult initial decision. A variety of formats were considered, such as a general run code using configuration files specifying the details and a functional toolbox, containing functions to assist the computation of simulations of this kind. An object oriented approach was chosen as it enables all components of the simulation to be held together, meaning variables need not be passed repetitively.
 
 \section{Goals}
 The immediate goals are to integrate a simulation for a system of the form,
-$$ \dot{x} = \underline{A}x + \underline{B}u$$
+$$ \dot{x} = \textbf{A}x + \textbf{B}u \,: \quad x \in \mathbb{R}^{n},\,\, y \in \mathbb{R}^m$$
 
 into the current toolbox. The long term goals are to implement and test the controller design method.
 

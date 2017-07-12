@@ -6,7 +6,7 @@ sys.path.append(
 import sim_tools as st
 
 #continuous
-print('Continuous')
+print('\n\nContinuous')
 
 test_cont = st.simulate_cont()
 test_cont = st.simulate_cont(3)
@@ -44,13 +44,13 @@ print("X,Y no C, no grid.")
 test_cont.plot([1,100],grid=False)
 
 #discrete
-print('Discrete')
+print('\n\nDiscrete')
 
 
 test_disc = st.simulate_disc()
 test_disc = st.simulate_disc(3)
 print('Expect None, None.')
-print(test_cont.B,test_disc.C)
+print(test_disc.B,test_disc.C)
 test_disc = st.simulate_disc(3,4)
 test_disc = st.simulate_disc(3,4,5)
 
