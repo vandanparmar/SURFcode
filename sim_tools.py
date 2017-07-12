@@ -4,6 +4,8 @@ from scipy import linalg
 import matplotlib.pyplot as plt
 from graph_tools import *
 
+
+
 def random_mat(a,b):
 	toReturn = np.random.rand(a,b)
 	return toReturn
@@ -20,6 +22,40 @@ def random_unit(n):
 		max_e = np.max(np.abs(linalg.eigvals(toReturn)))
 		toReturn /= max_e*np.random.uniform(1,5)
 	return toReturn
+
+def plot_sio(self,times,disc,grid, x=None, y=None,u=None):
+	if(disc):
+		xlabel = "K"
+		title = " plot for k = "+str(times[0])+' to k = '+str(times[-1])+'.'
+	else:
+		xlabel = "Time"
+		title = " plot for t = "+str(times[0])+' to t = '+str(times[-1])+'.'
+	plot_type = []
+	if(x is not None):
+		plot_type.append(('x','State',len(self.x0)))
+	if(y is not None):
+		plot_type.append(('y','Output',self.get_C_dim()))
+	if(u is not None):
+		plot_type.append(('u','Input',self.get_B_dim()))
+	plot_tot = len(plot_type)
+	for index,var in enumerate(plot_type):
+		labels = [var[0]+str(i) for i in range(1,var[2]+1)]
+		plt.subplot(plot_tot,1,index+1)
+		for arr,label in zip(eval(var[0]).transpose(),labels):
+			if(disc):
+				plt.step(times,arr,label=label)
+			else:
+				plt.plot(times,arr,label=label)
+		plt.title(var[1]+title)
+		plt.ylabel(var[1])
+		plt.xlabel(xlabel)
+		plt.legend()
+		if(grid):
+			plt.grid(color = '#a6a5a6')
+	plt.subplots_adjust(hspace = 0.5)
+	plt.show()
+
+
 
 class simulate_cont:
 	def __init__(self,n=None,no=None,nu=None):
@@ -213,29 +249,7 @@ class simulate_cont:
 			t = np.linspace(start,end,points)
 			x = self.get_x_set(t)
 			y = self.get_y_set(t,x)
-			labels_x = ["x"+str(i) for i in range(0,len(self.x0))]
-			labels_y = ["y"+str(i) for i in range(0,self.get_C_dim())]
-			plt.subplot(2,1,1)
-			for x_arr,x_label in zip(x.transpose(),labels_x):
-				plt.plot(t,x_arr,label = x_label)
-			plt.title('State plot for t = '+str(start)+' to t = '+str(end)+'.')
-			plt.ylabel('State')
-			plt.xlabel('Time')
-			plt.legend()
-			plt.subplot(2,1,2)
-			for y_arr,y_label in zip(y.transpose(),labels_y):
-				plt.plot(t,y_arr,label = y_label)
-			plt.title('Output plot for t = '+str(start)+' to t = '+str(end)+'.')
-			plt.ylabel('Output')
-			plt.xlabel('Time')
-			plt.legend()
-			if(grid):
-				plt.subplot(2,1,1)
-				plt.grid(color = '#a6a5a6')
-				plt.subplot(2,1,2)
-				plt.grid(color = '#a6a5a6')
-			plt.subplots_adjust(hspace=0.5)
-			plt.show()
+			plot_sio(self,t,False,grid,x,y)
 			if(filename  is not None):
 				filename_x = 'state_'+filename
 				filename_y = 'output_'+filename
@@ -250,16 +264,7 @@ class simulate_cont:
 			points = plot_points
 			t = np.linspace(start,end,points)
 			x = self.get_x_set(t)
-			labels = ["x"+str(i) for i in range(0,len(self.x0))]
-			plt.xlabel('Time')
-			plt.ylabel('State')
-			plt.title('State plot for t = '+str(start)+' to t = '+str(end)+'.')
-			for x_arr,label in zip(x.transpose(),labels):
-				plt.plot(t,x_arr,label = label)
-			plt.legend()
-			if(grid):
-				plt.grid(color = '#a6a5a6')
-			plt.show()
+			plot_sio(self,t,False,grid,x=x)
 			if(filename  is not None):
 				self.save_state(filename_x,times,points,x)
 
@@ -271,16 +276,7 @@ class simulate_cont:
 			points = plot_points
 			t = np.linspace(start,end,points)
 			y = self.get_y_set(t)
-			labels = ["y"+str(i) for i in range(0,self.get_C_dim())]
-			plt.xlabel('Time')
-			plt.ylabel('Output')
-			plt.title('Output plot for t = '+str(start)+' to t = '+str(end)+'.')
-			for y_arr,label in zip(y.transpose(),labels):
-				plt.plot(t,y_arr,label = label)
-			plt.legend()
-			if(grid):
-				plt.grid(color = '#a6a5a6')
-			plt.show()
+			plot_sio(self,t,False,grid,y=y)
 			if(filename  is not None):
 				self.save_output(filename_y,times,points,y)
 
@@ -469,29 +465,7 @@ class simulate_disc:
 			k = np.arange(start,end)
 			x = self.get_x_set(k)
 			y = self.get_y_set(k,x)
-			labels_x = ["x"+str(i) for i in range(0,len(self.x0))]
-			labels_y = ["y"+str(i) for i in range(0,self.get_C_dim())]
-			plt.subplot(2,1,1)
-			for x_arr,x_label in zip(x.transpose(),labels_x):
-				plt.step(k,x_arr,where='post',label = x_label)
-			plt.title('State plot for k = '+str(start)+' to k = '+str(end)+'.')
-			plt.ylabel('State')
-			plt.xlabel('k')
-			plt.legend()
-			plt.subplot(2,1,2)
-			for y_arr,y_label in zip(y.transpose(),labels_y):
-				plt.step(k,y_arr,where='post',label = y_label)
-			plt.title('Output plot for k = '+str(start)+' to k = '+str(end)+'.')
-			plt.ylabel('Output')
-			plt.xlabel('k')
-			plt.legend()
-			if(grid):
-				plt.subplot(2,1,1)
-				plt.grid(color = '#a6a5a6')
-				plt.subplot(2,1,2)
-				plt.grid(color = '#a6a5a6')
-			plt.subplots_adjust(hspace = 0.5)
-			plt.show()
+			plot_sio(self,k,True,grid,x=x,y=y)
 			if(filename is not None):
 				filename_x = 'state_'+filename
 				filename_y = 'output_'+filename
@@ -503,16 +477,7 @@ class simulate_disc:
 			start,end = ks
 			k = np.arange(start,end)
 			x = self.get_x_set(k)
-			labels = ["x"+str(i) for i in range(0,len(self.x0))]
-			plt.xlabel('k')
-			plt.ylabel('State')
-			plt.title('State plot for k = '+str(start)+' to k = '+str(end)+'.')
-			for x_arr,label in zip(x.transpose(),labels):
-				plt.step(k,x_arr,where='post',label = label)
-			plt.legend()
-			if(grid):
-				plt.grid(color = '#a6a5a6')
-			plt.show()
+			plot_sio(self,k,True,grid,x=x)
 			if(filename is not None):
 				self.save_state(filename,ks,x)
 
@@ -521,16 +486,6 @@ class simulate_disc:
 			start,end = ks
 			k = np.arange(start,end)
 			y = self.get_y_set(k)
-			labels = ["y"+str(i) for i in range(0,self.get_C_dim())]
-			plt.xlabel('k')
-			plt.ylabel('Output')
-			plt.title('Output plot for k = '+str(start)+' to k = '+str(end)+'.')
-			for y_arr,label in zip(y.transpose(),labels):
-				plt.step(k,y_arr,where='post',label = label)
-			plt.legend()
-			if(grid):
-				plt.grid(color = '#a6a5a6')
-			plt.show()
+			plot_sio(self,k,True,grid,y=y)
 			if(filename is not None):
 				self.save_state(filename,ks,y)
-
