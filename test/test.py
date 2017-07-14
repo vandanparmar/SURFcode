@@ -6,7 +6,7 @@ sys.path.append(
 import sim_tools as st
 from scipy import integrate
 import numpy as np
-# test_1 = simulate_cont(5,5)
+# test_1 = st.simulate_cont(5,5)
 # A = np.array([[-1,0],[0,-1]])
 # B = np.array([[1,0],[1,0],[1,0],[1,0]])
 # C = np.array([[1,0],[0,1]])
@@ -23,21 +23,17 @@ import numpy as np
 # test = st.simulate_cont(2,2,2)
 # test.setA(A).setC(C)
 # test.plot([1,10],grid=True)
-def input(u):
-	if (u[0]>=0):
-		return 1
-	else:
-		return -1
-
-def func(x,input):
-	toReturn = np.array([np.sin(x),np.cos(x)])
-	toReturn += input(toReturn)
-	return toReturn
-
-y = integrate.quad(func,0,2*np.pi,args=input)
-print(y)
 
 # test = st.simulate_disc(2,2,2)
 # test.setA(A).setC(C)
 # test.plot([1,10],grid=True)
 
+pn = st.power_network(st.load_from_file("test/test_graph_1.json"))
+p_cont = pn.generate_cont_sim()
+p_disc = pn.generate_disc_sim()
+
+print(p_cont.A)
+print(p_cont.B)
+
+p_cont.plot([0,50])
+p_disc.plot([0,50])

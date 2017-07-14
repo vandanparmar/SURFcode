@@ -1,34 +1,39 @@
-\begin{thebibliography}{1}
+\providecommand{\href}[2]{#2}\begingroup\raggedright\begin{thebibliography}{1}
 
 \bibitem{Atzori2010}
-L~Atzori, A~Iera, and G~Morabito.
-\newblock {The internet of things: A survey}.
-\newblock {\em Computer networks}, 2010.
+L.~Atzori, A.~Iera, and G.~Morabito, ``{The internet of things: A survey},''
+  {\em Computer networks} (2010) .
 
 \bibitem{Amin2005}
-SM~Amin and BF~Wollenberg.
-\newblock {Toward a smart grid: power delivery for the 21st century}.
-\newblock {\em IEEE power and energy magazine}, 2005.
+S.~Amin and B.~Wollenberg, ``{Toward a smart grid: Power delivery for the 21st
+  century},'' {\em IEEE power and energy magazine} (2005) .
 
 \bibitem{Farhangi2010}
-H~Farhangi.
-\newblock {The path of the smart grid}.
-\newblock {\em IEEE power and energy magazine}, 2010.
+H.~Farhangi, ``{The path of the smart grid},'' {\em IEEE power and energy
+  magazine} (2010) .
 
 \bibitem{Chien1997}
-CC~Chien, Y~Zhang, and PA~Ioannou.
-\newblock {Traffic density control for automated highway systems}.
-\newblock {\em Automatica}, 1997.
+C.~Chien, Y.~Zhang, and P.~Ioannou, ``{Traffic density control for automated
+  highway systems},'' {\em Automatica} (1997) .
+
+\bibitem{Rotkowitz2006}
+M.~Rotkowitz and S.~Lall, ``{A Characterization of Convex Problems in
+  Decentralized Control},'' {\em IEEE Transactions on Automatic Control} (2006)
+  .
+
+\bibitem{Wang2016}
+Y.~Wang, N.~Matni, and J.~Doyle, ``{A System Level Approach to Controller
+  Synthesis},'' \href{http://arxiv.org/abs/1610.04815}{{\ttfamily
+  arXiv:1610.04815}}.
 
 \bibitem{Wang2017}
-Yuh-Shyang Wang, Nikolai Matni, and John~C. Doyle.
-\newblock {Separable and Localized System Level Synthesis for Large-Scale
-  Systems}.
-\newblock jan 2017.
+Y.~Wang, N.~Matni, and J.~Doyle, ``{Separable and Localized System Level
+  Synthesis for Large-Scale Systems},''
+  \href{http://arxiv.org/abs/1701.05880}{{\ttfamily arXiv:1701.05880}}.
 
 \bibitem{Machowski1997}
-J~Machowski, J~Bialek, and JR~Bumby.
-\newblock {\em {Power system dynamics and stability}}.
-\newblock 1997.
+J.~Machowski, J.~Bialek, and J.~Bumby, {\em {Power system dynamics and
+  stability}}.
+\newblock Wiley, 1997.
 
-\end{thebibliography}
+\end{thebibliography}\endgroup

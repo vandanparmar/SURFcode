@@ -55,8 +55,6 @@ def plot_sio(self,times,disc,grid, x=None, y=None,u=None):
 	plt.subplots_adjust(hspace = 0.5)
 	plt.show()
 
-
-
 class simulate_cont:
 	def __init__(self,n=None,no=None,nu=None):
 		if(n is None):
@@ -76,15 +74,15 @@ class simulate_cont:
 				self.B = None
 			else:
 				self.B = random_mat(n,nu)
-			self.x0 = np.random.rand(1,n)
+			self.x0 = np.random.rand(n,1)
 		self.plot_points = 100
 
-	def setABC(self,A,C=None,B=None):
+	def setABC(self,A,B=None,C=None):
 		shapeA = np.shape(A)
 		if(shapeA[0] == shapeA[1]):
 			self.A = np.array(A)
 			n = shapeA[0]
-			self.x0 = np.random.rand(n)
+			self.x0 = np.random.rand(n,1)
 			self.__ready = True
 
 		else:
@@ -118,9 +116,8 @@ class simulate_cont:
 
 	def setA(self,A):
 		if(self.C  is not None):
-			if(np.shape(A)[0]==np.shape(self.C)[1]):
+			if(np.shape(A)[0]==np.shape(self.C)[0]):
 				self.A = np.array(A)
-				self.x0 = np.random.rand(np.shape(A)[0],1)
 			else:
 				print('Dimensions of A not compatible, please try again.')
 		else:
@@ -239,11 +236,6 @@ class simulate_cont:
 			t = np.linspace(start,end,points)
 			x = self.get_x_set(t)
 			y = self.get_y_set(t,x)
-			print(np.shape(x))
-			print(x)
-			print(np.shape(y))
-			print(y)
-			
 			plot_sio(self,t,False,grid,x,y)
 			if(filename  is not None):
 				filename_x = 'state_'+filename
@@ -261,7 +253,7 @@ class simulate_cont:
 			x = self.get_x_set(t)
 			plot_sio(self,t,False,grid,x=x)
 			if(filename  is not None):
-				self.save_state(filename_x,times,points,x)
+				self.save_state(filename,times,points,x)
 
 	def plot_output(self,times,plot_points=None,filename=None,grid=False):
 		if(self.ready()):
@@ -273,9 +265,7 @@ class simulate_cont:
 			y = self.get_y_set(t)
 			plot_sio(self,t,False,grid,y=y)
 			if(filename  is not None):
-				self.save_output(filename_y,times,points,y)
-
-		
+				self.save_output(filename,times,points,y)
 
 class simulate_disc:
 	def __init__(self, n=None, no=None, nu=None):
@@ -296,14 +286,14 @@ class simulate_disc:
 				self.B = None
 			else:
 				self.B = random_mat(n,nu)
-			self.x0 = np.random.rand(n)			
+			self.x0 = np.random.rand(n,1)			
 
-	def setABC(self,A,C=None,B=None):
+	def setABC(self,A,B=None,C=None):
 		shapeA = np.shape(A)
 		if(shapeA[0] == shapeA[1]):
 			self.A = np.array(A)
 			n = shapeA[0]
-			self.x0 = np.random.rand(n)
+			self.x0 = np.random.rand(n,1)
 			self.__ready = True
 		else:
 			print('Please supply a square A matrix.')
@@ -336,9 +326,8 @@ class simulate_disc:
 
 	def setA(self,A):
 		if(self.C  is not None):
-			if(np.shape(A)[0]==np.shape(self.C)[1]):
+			if(np.shape(A)[0]==np.shape(self.C)[0]):
 				self.A = np.array(A)
-				self.x0 = np.random.rand(np.shape(A)[0])
 			else:
 				print('Dimensions of A not compatible, please try again.')
 		else:
@@ -473,3 +462,50 @@ class simulate_disc:
 			plot_sio(self,k,True,grid,y=y)
 			if(filename is not None):
 				self.save_state(filename,ks,y)
+
+class power_network:
+	def __init__(self,Adj):
+		self.Adj = Adj
+		n = np.shape(Adj)[0]
+		self.k = np.random.rand(n,n)/2+0.5
+		self.m_inv = np.random.rand(n,1)/2+1.0
+		self.d = np.random.rand(n,1)*2
+		self.dt = 0.2
+
+	def generate_cont_sim(self):
+		toReturn = simulate_cont()
+		n = np.shape(self.Adj)[0]
+		lap = -generate_laplacian(self.Adj)
+		A = np.zeros((2*n,2*n))
+		B = np.zeros((2*n,n))
+		k_set = np.multiply(self.k,lap) #elementwise multiplication
+		k_set = np.multiply(self.m_inv,k_set)*self.dt
+		eye_n = np.eye(n)
+		d_m_set = -np.matmul(np.diag(self.d.flatten()),np.diag(self.m_inv.flatten()))
+		d_m_set += eye_n
+		A[::2,::2] = eye_n
+		A[1::2,::2] = k_set
+		A[::2,1::2] = self.dt*eye_n
+		A[1::2,1::2] = d_m_set
+		B[1::2,:] = eye_n
+		toReturn.setABC(A,B)
+		return toReturn
+
+	def generate_disc_sim(self):
+		toReturn = simulate_disc()
+		n = np.shape(self.Adj)[0]
+		lap = -generate_laplacian(self.Adj)
+		A = np.zeros((2*n,2*n))
+		B = np.zeros((2*n,n))
+		k_set = np.multiply(self.k,lap) #elementwise multiplication
+		k_set = np.multiply(self.m_inv,k_set)*self.dt
+		eye_n = np.eye(n)
+		d_m_set = -np.matmul(np.diag(self.d.flatten()),np.diag(self.m_inv.flatten()))
+		d_m_set += eye_n
+		A[::2,::2] = eye_n
+		A[1::2,::2] = k_set
+		A[::2,1::2] = self.dt
+		A[1::2,1::2] = d_m_set
+		B[1::2,:] = eye_n
+		toReturn.setABC(A,B)
+		return toReturn

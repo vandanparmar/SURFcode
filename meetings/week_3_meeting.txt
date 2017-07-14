@@ -1,0 +1,5 @@
+- controllability
+- observability
+- W_c - gramian
+- impulse (think about D)
+- step (check A invertible)

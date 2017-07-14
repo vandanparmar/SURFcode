@@ -4,6 +4,7 @@
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
 \begin{document}
 
 \title{First Interim Report}
@@ -11,26 +12,37 @@
 Supervisor: Steven Low, Co-supervisor: James Anderson}
 \maketitle
 \section*{Background and Project}
-As sensors and actuators have become increasingly small, their number has increased rapidly. Combined with the internet, this has resulted in many large scale distributed networks, such as the Internet of Things \cite{Atzori2010}, the smart grid \cite{Amin2005,Farhangi2010} and automated motorway systems \cite{Chien1997}. However, designing controllers for such networks is extremely difficult. To compute the controller for a large centralized system is difficult and this assumes that all information about the system is available immediately. It also assumes that computation of the control action can be computed and communicated back to the network quickly. Clearly this is not the case in many of the large networks described above. Decentralised controllers don't have full information or act using delayed information, thus outputs can be sub optimal. In many cases the controller itself is difficult to construct, few algorithms exist none of which are scalable.
+As sensors and actuators have become increasingly small, their numbers have increased rapidly. Combined with the internet, this has resulted in many large scale distributed networks, such as the Internet of Things \cite{Atzori2010}, the smart grid \cite{Amin2005,Farhangi2010} and automated motorway systems \cite{Chien1997}. However, designing controllers for such networks is extremely difficult \cite{Rotkowitz2006}. To compute the controller for a large centralised system is difficult and this assumes that all information about the system is available immediately. It also assumes that computation of the control action can be computed and communicated back to the network quickly. Clearly this is not the case in many of the large networks described above. Decentralised controllers don't have full information or act using delayed information, thus outputs can be sub optimal. In many cases the controller itself is difficult to construct, few algorithms exist none of which are scalable.
 
-A System Level Approach \cite{Wang2017} is a new method for decentralized control that scales well. This decomposes the global optimisation problem into locally solvable subproblems, in such a way that the complexity of the resulting synthesis method is $\mathcal{O}(1)$ with respect to the size of the global system. For a power system this is particularly important, as developing a controller for a power network can drastically reduce energy usage. 
+The System Level Approach \cite{Wang2016,Wang2017} is a new method for control of networks that scales well and is decentralised. This decomposes the global optimisation problem into locally solvable subproblems, in such a way that the complexity of the resulting synthesis method is $\mathcal{O}(1)$ with respect to the size of the networked system. For a power system this is particularly important, as developing a controller for a power network can drastically reduce energy waste and improve the stability of the grid (i.e. maintain a constant frequency). 
 
 The aim of this project is to implement this method into an easy to use toolbox, giving particular attention to solving of problems to do with the scalable control of large power networks.
 
 \section*{Current Progress}
-A basic toolbox has been implemented. This simulates a system of the form, 
+A basic toolbox has been implemented. This simulates continuous and discrete dynamical systems of the form, 
 \begin{equation*}
-\begin{split}
-\dot{x} = \textbf{A}x \,&: \quad x \in \mathbb{R}^{n} \\
-y = \textbf{C}x \, &: \quad y \in \mathbb{R}^{n_o}
-\end{split}
+\begin{aligned}
+\dot{x} = \textbf{A}x \, & \quad  \\
+y = \textbf{C}x \, & \quad 
+\end{aligned}
+\textbf{OR}
+\begin{aligned}
+\quad \, &x[k+1]=\textbf{A}x[k] \\
+\quad \, &y[k]=\textbf{C}x[k] 
+\end{aligned}
+\begin{aligned}
+&:\quad  x \in \mathbb{R}^{n} \\
+&: \quad y \in \mathbb{R}^{n_o}
+\end{aligned}
 \end{equation*}
-in both a discrete and continuous case. In the case of a power network, it is $\textbf{A}$ that encodes the structure of the network. Power networks are described by the swing equation \cite[eq 5.8]{Machowski1997},
+
+In the case of a power network, it is the drift matrix, $\textbf{A}$, that encodes the structure of the network. Power networks are described by the linearised swing equation \cite[eq 5.8]{Machowski1997},
 \begin{equation*}
 \textbf{M} \ddot{\theta} = \textbf{P}_{\text{mech}} - \mathcal{L}\theta - \textbf{D}\dot{\theta} \, : \quad \theta \in \mathbb{R}^n
 \end{equation*}
-where $\textbf{M}$ and $\textbf{D}$ are the angular momentum and damping matrices respectively, $\textbf{P}_{\text{mech}}$ is the matrix of disturbances and $\mathcal{L}$ is the Laplacian matrix of the network, $\mathcal{D}-\mathcal{A}$, the degree matrix subtracted from the adjacency matrix. In this case, the state vector, $x$, is pairs of $[\theta, \dot{\theta}]^{\text{T}}$ for each generator. The swing equation can then be expressed as a pair of coupled ODEs,
+where $\textbf{M}$ and $\textbf{D}$ are the angular momentum and damping matrices respectively, $\textbf{P}_{\text{mech}}$ is the matrix of mechanical disturbances and $\mathcal{L}$ is the Laplacian matrix that encodes the network structure. In this case, the state vector, $x$, is pairs of $[\theta, \dot{\theta}]^{\text{T}}$ for each generator. The swing equation can then be expressed as the system of ODEs,
 \begin{equation*}
+\frac{d}{dt}x= 
 \frac{d}{dt}\begin{bmatrix}
 \theta \\
 \dot{\theta}
@@ -38,26 +50,36 @@ where $\textbf{M}$ and $\textbf{D}$ are the angular momentum and damping matrice
 = \begin{bmatrix}
 \dot{\theta} \\
 \textbf{M}^{-1} (\textbf{P}_{\text{mech}} - \mathcal{L}\theta - \textbf{D}\dot{\theta})
+\end{bmatrix} \, , \quad
+x = \begin{bmatrix}
+x_1 \\
+\vdots \\
+x_n \\
+\end{bmatrix}
+\, , \quad
+x_i = \begin{bmatrix}
+\theta_i \\
+\dot{\theta_i}
 \end{bmatrix}
 \end{equation*}
-and thus the $\textbf{A}$ matrix can be related to the generator network.
- The implemented toolbox enables easy plotting of the inputs and outputs of the system. Generated data can then be saved to a file for future reference. 
+where $\theta$ is the vector of phase angles of each generator and $\dot{\theta}$ is the vector of frequencies.
+The implemented toolbox enables easy plotting of the inputs and outputs of the system. Generated data can then be saved to a file for future reference. 
 
-Deciding the format for the toolbox was a difficult initial decision. A variety of formats were considered, such as a general run code using configuration files specifying the details and a functional toolbox, containing functions to assist the computation of simulations of this kind. An object oriented approach was chosen as it enables all components of the simulation to be held together, meaning variables need not be passed repetitively. The code is stored in a GitHub repository enabling easy version control, documentation and distribution.
+Deciding the format for the toolbox was a difficult initial decision. A variety of formats were considered, such as a general run code using configuration files specifying the details and a functional toolbox, containing functions to assist the computation of simulations of this kind. An object oriented approach was chosen as it enables all components of the simulation to be held together, meaning variables need not be passed repetitively. The code is stored in a GitHub repository \footnote{https://github.com/vandanparmar/SURFcode} enabling easy version control, documentation and distribution.
 
 \section*{Goals}
 The immediate goals are to integrate a simulation for a system of the form,
 \begin{equation*}
 \begin{split}
  \dot{x} = \textbf{A}x + \textbf{B}u \,&: \quad x \in \mathbb{R}^{n},\,\, u \in \mathbb{R}^{n_i} \\
- y = \textbf{C}x\, &: \quad x \in \mathbb{R}^{n}, \,\, y \in \mathbb{R}^{n_o}
+ y = \textbf{C}x+\textbf{D}u \, &: \quad x \in \mathbb{R}^{n}, \,\, y \in \mathbb{R}^{n_o}
 \end{split}
 \end{equation*}
  
 
-where $u$ is a system input, into the current toolbox. The long term goals are to implement and test the controller design method.
+where $u$ is a system input, into the current toolbox, as well as tests of stability and controllability. The long term goals are to implement and test the decentralised control method from \cite{Wang2017}.
 
-\bibliographystyle{unsrt}
+\bibliographystyle{utphys}
 \bibliography{first_interim_bib}
 
 \end{document}
