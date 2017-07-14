@@ -194,6 +194,27 @@ class simulate_cont:
 				ys = np.matmul(self.C,xs)		
 		return ys
 
+	def is_controllable(self):
+		if (self.ready()):
+			if (self.B is not None):
+				q = -np.matmul(self.B,self.B.conj().T)
+				x_c = linalg.solve_lyapunov(self.A,q)
+				controllable = (linalg.eigvals(x_c)>0).sum() == np.shape(self.A)[0]
+				return [controllable,x_c]
+			else:
+				print("Please set B.")
+
+	def is_observable(self):
+		if (self.ready()):
+			if(self.C is not None):
+				q = -np.matmul(self.C,self.C.conj().T)
+				y_o = linalg.solve_lyapunov(self.A.conj().T,q)
+				y_o = y_o.conj().T
+				controllable = (linalg.eigvals(y_o)>0).sum() == np.shape(self.A)[0]
+				return [controllable,y_o]
+			else:
+				print("Please set C.")
+
 	def save_state(self,filename,times,plot_points=None,xs=None):	
 		if(self.ready()):
 			if(plot_points is None):
@@ -402,6 +423,26 @@ class simulate_disc:
 			else:
 				toReturn = dim[0]
 			return toReturn
+
+	def is_controllable(self): #should be reachable?
+		if (self.ready()):
+			if (self.B is not None):
+				q = np.matmul(self.B,self.B.conj().T)
+				x_c = linalg.solve_discrete_lyapunov(self.A.conj().T,q)
+				controllable = (linalg.eigvals(x_c)>0).sum() == np.shape(self.A)[0]
+				return [controllable,x_c]
+			else:
+				print("Please set B.")
+
+	def is_observable(self):
+		if (self.ready()):
+			if (self.C is not None):
+				q = np.matmul(self.C,self.C.conj().T)
+				y_o = linalg.solve_discrete_lyapunov(self.A,q)
+				observable = (linalg.eigvals(y_o)>0).sum() == np.shape(self.A)[0]
+				return [observable,y_o]
+			else:
+				print("Please set C.")
 
 	def save_state(self,filename,ks,xs=None):
 		if(self.ready()):

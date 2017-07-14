@@ -4,13 +4,21 @@ sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 
 import sim_tools as st
-from scipy import integrate
+from scipy import linalg
 import numpy as np
-# test_1 = st.simulate_cont(5,5)
-# A = np.array([[-1,0],[0,-1]])
-# B = np.array([[1,0],[1,0],[1,0],[1,0]])
-# C = np.array([[1,0],[0,1]])
-# #test_1.setABC(A,C,B)
+test_1 = st.simulate_disc(5,4,3)
+A = np.array([[-1,0],[0,-1]])
+B = np.array([[1,0],[1,1],[1,0],[1,0]]).T
+C = np.array([[1,0],[0,1]])
+test_1.setABC(A,C=C,B=B)
+print(linalg.det(np.matmul(B,B.conj().T)))
+print(linalg.eigvals(np.matmul(C,C.conj().T)))
+cont, x_c = test_1.is_controllable()
+print(cont)
+print(linalg.eigvals(x_c))
+obvs, y_o = test_1.is_observable()
+print(obvs)
+print(linalg.eigvals(y_o))
 
 # x = test_1.get_x(5)
 # y = test_1.get_y(5)
@@ -28,12 +36,12 @@ import numpy as np
 # test.setA(A).setC(C)
 # test.plot([1,10],grid=True)
 
-pn = st.power_network(st.load_from_file("test/test_graph_1.json"))
-p_cont = pn.generate_cont_sim()
-p_disc = pn.generate_disc_sim()
+# pn = st.power_network(st.load_from_file("test/test_graph_1.json"))
+# p_cont = pn.generate_cont_sim().setx0(np.transpose([[10]*10]))
+# p_disc = pn.generate_disc_sim()
 
-print(p_cont.A)
-print(p_cont.B)
+# print(p_cont.A)
+# print(p_cont.B)
 
-p_cont.plot([0,50])
-p_disc.plot([0,50])
+# p_cont.plot([0,50])
+# p_disc.plot([0,50])
