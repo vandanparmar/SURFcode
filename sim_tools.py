@@ -1,3 +1,148 @@
+"""
+Simulation Tools (:mod:`sim_tools`)
+==============================================
+
+This module contains simulations tools for both :ref:`discrete` and :ref:`continuous`. 
+
+
+Matrix Generation
+###################
+
+Functions to generate types of matrix for simulations.
+
+.. autosummary::
+	:toctree:
+
+	random_mat
+	random_stable
+	random_unit
+
+
+.. _continuous:
+
+Continuous Simulations
+########################
+
+
+Solving setups of the form,
+
+.. math::
+	\dot{x} = \mathbf{A}x + \mathbf{B}u \n
+	y = \mathbf{C}x + \mathbf{D}u
+
+
+
+Initialisation and Setting Matrices
+************************************
+
+.. autosummary::
+	:toctree:
+
+	simulate_cont.__init__
+	simulate_cont.setABC
+	simulate_cont.setA
+	simulate_cont.setB
+	simulate_cont.setC
+	simulate_cont.setx0
+	simulate_cont.set_plot_points
+
+Getting Values
+***************
+
+.. autosummary::
+	:toctree:
+
+	simulate_cont.get_x
+	simulate_cont.get_y
+	simulate_cont.get_x_set
+	simulate_cont.get_y_set
+
+Plotting and Saving
+********************
+
+.. autosummary::
+	:toctree:
+
+	simulate_cont.set_plot_points
+	simulate_cont.plot
+	simulate_cont.plot_state
+	simulate_cont.plot_output
+	simulate_cont.save_state
+	simulate_cont.save_output
+
+Simulation Properties
+**********************
+
+.. autosummary::
+	:toctree:
+
+	simulate_cont.is_controllable
+	simulate_cont.is_observable
+
+
+.. _discrete:
+
+Discrete Simulations
+########################
+
+
+Solving setups of the form,
+
+.. math::
+	x[k+1] = \mathbf{A}x[k] + \mathbf{B}u[k] \n
+	y[k] = \mathbf{C}x[k] + \mathbf{D}u[k]
+
+
+
+Initialisation and Setting Matrices
+************************************
+
+.. autosummary::
+	:toctree:
+
+	simulate_disc.__init__
+	simulate_disc.setABC
+	simulate_disc.setA
+	simulate_disc.setB
+	simulate_disc.setC
+	simulate_disc.setx0
+
+Getting Values
+***************
+
+.. autosummary::
+	:toctree:
+
+	simulate_disc.get_x
+	simulate_disc.get_y
+	simulate_disc.get_x_set
+	simulate_disc.get_y_set
+
+Plotting and Saving
+********************
+
+.. autosummary::
+	:toctree:
+
+	simulate_disc.plot
+	simulate_disc.plot_state
+	simulate_disc.plot_output
+	simulate_disc.save_state
+	simulate_disc.save_output
+
+Simulation Properties
+**********************
+
+.. autosummary::
+	:toctree:
+
+	simulate_disc.is_controllable
+	simulate_disc.is_observable
+"""
+
+
+#__all__ = ["random_mat","random_stable","random_unit"]
+
 import numpy as np
 from scipy import integrate
 from scipy import linalg
@@ -7,16 +152,41 @@ from graph_tools import *
 
 
 def random_mat(a,b):
+	"""Generate a random a x b matrix.
+
+	Args:
+	    a (int): Dimension 1
+	    b (int): Dimension 2
+
+	Returns:
+	    ndarray: a x b matrix with random entries uniformly distributed on [0,1)
+	"""
 	toReturn = np.random.rand(a,b)
 	return toReturn
 
 def random_stable(n):
+	"""Generate a random n x n stable matrix.
+	
+	Args:
+	    n (int): Dimension of matrix
+	
+	Returns:
+	    ndarray: n x n matrix with random entries uniformly distributed on [0,1), eigenvalues all have negative real part
+	"""
 	toReturn = np.random.rand(n,n)*2-1
 	while (np.real(linalg.eigvals(toReturn))<=0).sum() != n:
 		toReturn = np.random.rand(n,n)*2-1
 	return toReturn
 
 def random_unit(n):
+	"""Generate a random n x n matrix with spectral radius less than 1.
+	
+	Args:
+	    n (int): Dimensions of matrix
+	
+	Returns:
+	    ndarray: n x n matrix with random entries uniformly distributed on [0,1), eigenvalues lie in the unit circle
+	"""
 	toReturn = np.random.rand(n,n)*2-1
 	if((np.abs(linalg.eigvals(toReturn))<=1).sum() != n):
 		max_e = np.max(np.abs(linalg.eigvals(toReturn)))
@@ -56,7 +226,24 @@ def plot_sio(self,times,disc,grid, x=None, y=None,u=None):
 	plt.show()
 
 class simulate_cont:
+	"""Class to contain objects and functions for carrying out continuous simulations of the form,
+	:math:`\\underline{am i going to do this?}`
+
+	Attributes:
+	    A (ndarray): Drift matrix
+	    B (ndarray): Input matrix
+	    C (ndarray): Output matrix
+	    plot_points (int): Number of points to plot when plotting, default is 100
+	    x0 (ndarray): Initial conditions
+	"""
 	def __init__(self,n=None,no=None,nu=None):
+		"""Generate a simulate_cont object.
+		
+		Args:
+		    n (None, optional): Dimensions of n x n drift matrix, A
+		    no (None, optional): Dimension of n x no input matrix, B
+		    nu (None, optional): Dimensions of nu x n output matrix, C
+		"""
 		if(n is None):
 			print('Initilising with empty matrices, please specify using "setABC".')
 			self.A = np.array([])
@@ -78,6 +265,16 @@ class simulate_cont:
 		self.plot_points = 100
 
 	def setABC(self,A,B=None,C=None):
+		"""Set A, B, C matrices for a continuous simulation.
+		
+		Args:
+		    A (ndarray): Drift matrix
+		    B (None, optional): Input matrix
+		    C (None, optional): Output matrix
+		
+		Returns:
+		    simulate_cont: Updated simulate_cont object
+		"""
 		shapeA = np.shape(A)
 		if(shapeA[0] == shapeA[1]):
 			self.A = np.array(A)
@@ -115,6 +312,14 @@ class simulate_cont:
 			return False
 
 	def setA(self,A):
+		"""Set drift matrix, A.
+		
+		Args:
+		    A (ndarray): n x n drift matrix, A
+		
+		Returns:
+		    simulate_cont: Updated simulate_cont object
+		"""
 		if(self.C  is not None):
 			if(np.shape(A)[0]==np.shape(self.C)[0]):
 				self.A = np.array(A)
@@ -125,6 +330,14 @@ class simulate_cont:
 		return self
 
 	def setB(self,B):
+		"""Set input matrix, B.
+		
+		Args:
+		    B (ndarray): n x no input matrix, B
+		
+		Returns:
+		    simulate_cont: Updated simulate_cont object
+		"""
 		n = np.shape(self.A)[0]
 		if(np.shape(B)[0]==n):
 			self.B = np.array(B)
@@ -136,6 +349,14 @@ class simulate_cont:
 		return self
 
 	def setC(self,C):
+		"""Set output matrix, C.
+		
+		Args:
+		    C (ndarray): nu x n output matrix, C
+		
+		Returns:
+		    simulate_cont: Updated simulate_cont object
+		"""
 		n = np.shape(self.A)[0]
 		if(np.shape(C)[1]==n):
 			self.C = np.array(C)
@@ -147,6 +368,14 @@ class simulate_cont:
 		return self
 
 	def setx0(self,x0):
+		"""Set intital conditions, x0.
+		
+		Args:
+		    x0 (ndarray): n x 1 initial conditions, x0
+		
+		Returns:
+		    simulate_cont: Updated simulate_cont object
+		"""
 		if(np.shape(x0)==(np.shape(self.A)[0],1)):
 			self.x0 = x0
 		else:
@@ -154,16 +383,40 @@ class simulate_cont:
 		return self
 
 	def set_plot_points(self,points):
+		"""Set number of points to use when plotting, plot_points.
+		
+		Args:
+		    points (int): The number of points to use
+		
+		Returns:
+		    simulate_cont: Updated simulate_cont object
+		"""
 		if(points<10000):
 			self.plot_points = points
 		return self
 
 	def get_x(self,t):
+		"""Calculate a state vector at a particular time.
+		
+		Args:
+		    t (int): Time at which to return state vector
+		
+		Returns:
+		    ndarray: n x 1 state vector at time t
+		"""
 		if(self.ready()):
 			x = np.matmul(linalg.expm(self.A*t),self.x0)
 			return x
 
 	def get_y(self,t):
+		"""Calculate an output vector at a particular time.
+		
+		Args:
+		    t (int): Time at which to return output vector
+		
+		Returns:
+		    ndarray: no x 1 output vector at time t 
+		"""
 		if(self.ready()):
 			y = np.matmul(self.C,self.get_x(t))
 			return y
@@ -178,6 +431,14 @@ class simulate_cont:
 			return toReturn
 
 	def get_x_set(self,times):
+		"""Calculate a set of x values.
+		
+		Args:
+		    times (array): Array of times at which to return state vectors
+		
+		Returns:
+		    ndarray: n x len(times) set of state vectors
+		"""
 		if(self.ready()):
 			xs = self.get_x(times[0])
 			for time in times[1:]:
@@ -185,6 +446,15 @@ class simulate_cont:
 			return xs
 
 	def get_y_set(self,times,xs=None):
+		"""Calculate a set of y values.
+		
+		Args:
+		    times (array): Array of times at which to return output vectors
+		    xs (None, optional): Existing array of state vectors
+		
+		Returns:
+		    ndarray: n0 x len(times) set of output vectors
+		"""
 		if(self.ready()):
 			if(xs is None):
 				ys = self.get_y(times[0])
@@ -195,6 +465,12 @@ class simulate_cont:
 		return ys
 
 	def is_controllable(self):
+		"""Tests if the simulate_cont object is controllable.
+		
+		Returns:
+		    bool: Boolean, true if the simulate_cont configuration is controllable
+		    ndarray: Controllability grammian from Lyapunov equation
+		"""
 		if (self.ready()):
 			if (self.B is not None):
 				q = -np.matmul(self.B,self.B.conj().T)
@@ -205,6 +481,12 @@ class simulate_cont:
 				print("Please set B.")
 
 	def is_observable(self):
+		"""Tests if the simulate_cont object is observable.
+		
+		Returns:
+			bool: Boolean, true if the simulate_cont configuration is observable
+			ndarray: Observability grammian from Lyapunov equation
+		"""
 		if (self.ready()):
 			if(self.C is not None):
 				q = -np.matmul(self.C,self.C.conj().T)
@@ -216,6 +498,17 @@ class simulate_cont:
 				print("Please set C.")
 
 	def save_state(self,filename,times,plot_points=None,xs=None):	
+		"""Save a set of state vectors.
+		
+		Args:
+		    filename (str): Name of file or filepath for save file
+		    times (array): Array of times of state vectors to be saved
+		    plot_points (int, optional): Number of points to save, defaults to self.plot_points
+		    xs (ndarray, optional): Existing set of state vectors to save
+		
+		Returns:
+		    simulate_cont: To allow for chaining
+		"""
 		if(self.ready()):
 			if(plot_points is None):
 				plot_points = self.plot_points
@@ -231,6 +524,17 @@ class simulate_cont:
 		return self
 
 	def save_output(self,filename,times,plot_points=None,ys=None):
+		"""Save a set of output vectors
+		
+		Args:
+		    filename (str): Name of file or filebath for save file
+		    times (int): Array of times of output vectors to be saved
+		    plot_points (int, optional): Number of points to save, defaults to self.plot_points
+		    ys (ndarray, optional): Existing set of output vectors to save
+		
+		Returns:
+		    simulate_cont: To allow for chaining
+		"""
 		if(self.ready()):
 			if(plot_points is None):
 				plot_points = self.plot_points
@@ -246,6 +550,17 @@ class simulate_cont:
 		return self
 
 	def plot(self,times,plot_points=None,filename=None,grid=False):
+		"""Summary
+		
+		Args:
+		    times (TYPE): Description
+		    plot_points (None, optional): Description
+		    filename (None, optional): Description
+		    grid (bool, optional): Description
+		
+		Returns:
+		    TYPE: Description
+		"""
 		if(self.ready()):
 			if(self.C is None):
 				self.plot_state(times,plot_points,filename,grid)
@@ -265,6 +580,14 @@ class simulate_cont:
 				self.save_output(filename_y,times,points,y)
 
 	def plot_state(self,times,plot_points=None,filename=None,grid=False):
+		"""Summary
+		
+		Args:
+		    times (TYPE): Description
+		    plot_points (None, optional): Description
+		    filename (None, optional): Description
+		    grid (bool, optional): Description
+		"""
 		if(self.ready()):
 			if(plot_points is None):
 				plot_points=self.plot_points
@@ -277,6 +600,14 @@ class simulate_cont:
 				self.save_state(filename,times,points,x)
 
 	def plot_output(self,times,plot_points=None,filename=None,grid=False):
+		"""Summary
+		
+		Args:
+		    times (TYPE): Description
+		    plot_points (None, optional): Description
+		    filename (None, optional): Description
+		    grid (bool, optional): Description
+		"""
 		if(self.ready()):
 			if(plot_points is None):
 				plot_points=self.plot_points
@@ -289,7 +620,24 @@ class simulate_cont:
 				self.save_output(filename,times,points,y)
 
 class simulate_disc:
+	"""Class to contain objects and functions for carrying out discrete simulations of the form,
+	$$\\underline{am i going to do this?}$$
+
+	
+	Attributes:
+	    A (TYPE): Drift Matrix
+	    B (TYPE): Input Matrix
+	    C (TYPE): Output Matrix
+	    x0 (TYPE): Initial Conditions
+	"""
 	def __init__(self, n=None, no=None, nu=None):
+		"""Generate a simulate_disc object.
+		
+		Args:
+		    n (None, optional): Dimensions of n x n drift matrix, A
+		    no (None, optional): Dimension of n x no input matrix, B
+		    nu (None, optional): Dimensions of nu x n output matrix, C
+		"""
 		if(n is None):
 			print('Initilising with empty matrices, please specify using "setABC".')
 			self.A = np.array([])
@@ -310,6 +658,16 @@ class simulate_disc:
 			self.x0 = np.random.rand(n,1)			
 
 	def setABC(self,A,B=None,C=None):
+		"""Summary
+		
+		Args:
+		    A (TYPE): Description
+		    B (None, optional): Description
+		    C (None, optional): Description
+		
+		Returns:
+		    TYPE: Description
+		"""
 		shapeA = np.shape(A)
 		if(shapeA[0] == shapeA[1]):
 			self.A = np.array(A)
@@ -339,6 +697,11 @@ class simulate_disc:
 		return self
 
 	def ready(self):
+		"""Summary
+		
+		Returns:
+		    TYPE: Description
+		"""
 		if(self.__ready):
 			return True
 		else:
@@ -346,6 +709,14 @@ class simulate_disc:
 			return False
 
 	def setA(self,A):
+		"""Summary
+		
+		Args:
+		    A (TYPE): Description
+		
+		Returns:
+		    TYPE: Description
+		"""
 		if(self.C  is not None):
 			if(np.shape(A)[0]==np.shape(self.C)[0]):
 				self.A = np.array(A)
@@ -356,6 +727,14 @@ class simulate_disc:
 		return self
 
 	def setB(self,B):
+		"""Summary
+		
+		Args:
+		    B (TYPE): Description
+		
+		Returns:
+		    TYPE: Description
+		"""
 		n = np.shape(self.A)[0]
 		if(np.shape(B)[0]==n):
 			self.B = np.array(B)
@@ -367,6 +746,14 @@ class simulate_disc:
 		return self
 
 	def setC(self,C):
+		"""Summary
+		
+		Args:
+		    C (TYPE): Description
+		
+		Returns:
+		    TYPE: Description
+		"""
 		n = np.shape(self.A)[0]
 		if(np.shape(C)[1]==n):
 			self.C = np.array(C)
@@ -378,6 +765,14 @@ class simulate_disc:
 		return self
 
 	def setx0(self,x0):
+		"""Summary
+		
+		Args:
+		    x0 (TYPE): Description
+		
+		Returns:
+		    TYPE: Description
+		"""
 		if(np.shape(x0)==(np.shape(self.A)[0],1)):
 			self.x0 = x0
 		else:
@@ -385,16 +780,40 @@ class simulate_disc:
 		return self
 
 	def get_x(self,k):
+		"""Summary
+		
+		Args:
+		    k (TYPE): Description
+		
+		Returns:
+		    TYPE: Description
+		"""
 		if(self.ready()):
 			x = np.matmul(np.linalg.matrix_power(self.A,k),self.x0)
 			return x
 
 	def get_y(self,k):
+		"""Summary
+		
+		Args:
+		    k (TYPE): Description
+		
+		Returns:
+		    TYPE: Description
+		"""
 		if(self.ready()):
 			y = np.matmul(self.C,self.get_x(k))
 			return y
 
 	def get_x_set(self,ks):
+		"""Summary
+		
+		Args:
+		    ks (TYPE): Description
+		
+		Returns:
+		    TYPE: Description
+		"""
 		if(self.ready()):
 			xs = self.get_x(ks[0])
 			x0 = xs
@@ -404,6 +823,15 @@ class simulate_disc:
 		return xs
 
 	def get_y_set(self,ks,xs=None):
+		"""Summary
+		
+		Args:
+		    ks (TYPE): Description
+		    xs (None, optional): Description
+		
+		Returns:
+		    TYPE: Description
+		"""
 		if(self.ready()):
 			if(xs is None):
 				x_0 = self.get_x(ks[0])
@@ -416,6 +844,11 @@ class simulate_disc:
 		return ys
 
 	def get_C_dim(self):
+		"""Summary
+		
+		Returns:
+		    TYPE: Description
+		"""
 		if(self.ready()):
 			dim = np.shape(self.C)
 			if(len(dim)==1):
@@ -425,6 +858,11 @@ class simulate_disc:
 			return toReturn
 
 	def is_controllable(self): #should be reachable?
+		"""Summary
+		
+		Returns:
+		    TYPE: Description
+		"""
 		if (self.ready()):
 			if (self.B is not None):
 				q = np.matmul(self.B,self.B.conj().T)
@@ -435,6 +873,11 @@ class simulate_disc:
 				print("Please set B.")
 
 	def is_observable(self):
+		"""Summary
+		
+		Returns:
+		    TYPE: Description
+		"""
 		if (self.ready()):
 			if (self.C is not None):
 				q = np.matmul(self.C,self.C.conj().T)
@@ -445,6 +888,16 @@ class simulate_disc:
 				print("Please set C.")
 
 	def save_state(self,filename,ks,xs=None):
+		"""Summary
+		
+		Args:
+		    filename (TYPE): Description
+		    ks (TYPE): Description
+		    xs (None, optional): Description
+		
+		Returns:
+		    TYPE: Description
+		"""
 		if(self.ready()):
 			eigvals = linalg.eigvals(self.A)
 			start,end = ks
@@ -458,6 +911,16 @@ class simulate_disc:
 		return self
 
 	def save_output(self,filename,ks,ys=None):
+		"""Summary
+		
+		Args:
+		    filename (TYPE): Description
+		    ks (TYPE): Description
+		    ys (None, optional): Description
+		
+		Returns:
+		    TYPE: Description
+		"""
 		if(self.ready()):
 			eigvals = linalg.eigvals(self.A)
 			start,end = ks
@@ -471,6 +934,16 @@ class simulate_disc:
 		return self
 
 	def plot(self,ks,filename=None, grid=False):
+		"""Summary
+		
+		Args:
+		    ks (TYPE): Description
+		    filename (None, optional): Description
+		    grid (bool, optional): Description
+		
+		Returns:
+		    TYPE: Description
+		"""
 		if(self.ready()):
 			if(self.C is None):
 				self.plot_state(ks,filename,grid)
@@ -487,6 +960,13 @@ class simulate_disc:
 				self.save_output(filename_y,ks,y)
 
 	def plot_state(self,ks,filename=None, grid=False):
+		"""Summary
+		
+		Args:
+		    ks (TYPE): Description
+		    filename (None, optional): Description
+		    grid (bool, optional): Description
+		"""
 		if(self.ready()):
 			start,end = ks
 			k = np.arange(start,end+1)
@@ -496,6 +976,13 @@ class simulate_disc:
 				self.save_state(filename,ks,x)
 
 	def plot_output(self,ks,filename=None, grid=False):
+		"""Summary
+		
+		Args:
+		    ks (TYPE): Description
+		    filename (None, optional): Description
+		    grid (bool, optional): Description
+		"""
 		if(self.ready()):
 			start,end = ks
 			k = np.arange(start,end+1)
@@ -505,7 +992,21 @@ class simulate_disc:
 				self.save_state(filename,ks,y)
 
 class power_network:
+	"""Class for representing power networks and generating discrete and continuous simulations of power networks.
+	
+	Attributes:
+	    Adj (TYPE): Adjacency Matrix
+	    d (TYPE): Damping Matrix
+	    dt (float): Time Step for Discretisation
+	    k (TYPE): Coupling Matrix
+	    m_inv (TYPE): 1/mass Matrix
+	"""
 	def __init__(self,Adj):
+		"""Summary
+		
+		Args:
+		    Adj (TYPE): Description
+		"""
 		self.Adj = Adj
 		n = np.shape(Adj)[0]
 		self.k = np.random.rand(n,n)/2+0.5
@@ -514,6 +1015,11 @@ class power_network:
 		self.dt = 0.2
 
 	def generate_cont_sim(self):
+		"""Summary
+		
+		Returns:
+		    TYPE: Description
+		"""
 		toReturn = simulate_cont()
 		n = np.shape(self.Adj)[0]
 		lap = -generate_laplacian(self.Adj)
@@ -533,6 +1039,11 @@ class power_network:
 		return toReturn
 
 	def generate_disc_sim(self):
+		"""Summary
+		
+		Returns:
+		    TYPE: Description
+		"""
 		toReturn = simulate_disc()
 		n = np.shape(self.Adj)[0]
 		lap = -generate_laplacian(self.Adj)

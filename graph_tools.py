@@ -1,3 +1,10 @@
+"""
+Graph Tools (:mod:`graph_tools`)
+==============================================
+
+This module contains network related functions.
+
+"""
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -6,27 +13,65 @@ import json
 
 #generate a random graph with a given number of nodes and probability for each edge.
 def generate_rand(n,p):
+	"""Summary
+	
+	Args:
+	    n (TYPE): Description
+	    p (TYPE): Description
+	
+	Returns:
+	    TYPE: Description
+	"""
 	G = nx.connected_watts_strogatz_graph(n,3,p)
 	toReturn = nx.to_numpy_matrix
 	return toReturn
 
 def generate_laplacian(adjacency_matrix):
+	"""Summary
+	
+	Args:
+	    adjacency_matrix (TYPE): Description
+	
+	Returns:
+	    TYPE: Description
+	"""
 	G = nx.from_numpy_matrix(adjacency_matrix)
 	toReturn = nx.laplacian_matrix(G)
 	return toReturn.toarray()
 
 def generate_degree(adjacency_matrix):
+	"""Summary
+	
+	Args:
+	    adjacency_matrix (TYPE): Description
+	
+	Returns:
+	    TYPE: Description
+	"""
 	laplacian = generate_laplacian(adjacency_matrix)
 	toReturn = laplacian + adjacency_matrix
 	return toReturn
 
 def generate_incidence(adjacency_matrix):
+	"""Summary
+	
+	Args:
+	    adjacency_matrix (TYPE): Description
+	
+	Returns:
+	    TYPE: Description
+	"""
 	G = nx.from_numpy_matrix(adjacency_matrix)
 	toReturn = nx.incidence_matrix(G)
 	return toReturn.toarray()
 
 # given an adjacency matrix use networkx and matlpotlib to plot the graph
 def show_graph(adjacency_matrix):
+	"""Summary
+	
+	Args:
+	    adjacency_matrix (TYPE): Description
+	"""
 	rows, cols = np.where(adjacency_matrix == 1)
 	edges = zip(rows.tolist(), cols.tolist())
 	gr = nx.Graph()
@@ -36,10 +81,24 @@ def show_graph(adjacency_matrix):
 	plt.show() 
 
 def save_to_file(adjacency_matrix,filename):
+	"""Summary
+	
+	Args:
+	    adjacency_matrix (TYPE): Description
+	    filename (TYPE): Description
+	"""
 	np.savetxt(filename,adjacency_matrix)
 	print('File saved!')
 
 def load_from_file(filename):
+	"""Summary
+	
+	Args:
+	    filename (TYPE): Description
+	
+	Returns:
+	    TYPE: Description
+	"""
 	if filename.endswith('.json'):
 		toReturn = load_from_GUI(filename)
 	if filename.endswith(('.txt','.dat')):
@@ -48,6 +107,14 @@ def load_from_file(filename):
 
 #load file from the online GUI
 def load_from_GUI(filename):
+	"""Summary
+	
+	Args:
+	    filename (TYPE): Description
+	
+	Returns:
+	    TYPE: Description
+	"""
 	with open(filename) as data_file:    
 		data = json.load(data_file)
 		nodes_num = len(data['nodes'])
@@ -62,5 +129,13 @@ def load_from_GUI(filename):
 		return toReturn
 
 def load_from_numpy(filename):
+	"""Summary
+	
+	Args:
+	    filename (TYPE): Description
+	
+	Returns:
+	    TYPE: Description
+	"""
 	toReturn = np.loadtxt(filename)
 	return toReturn
