@@ -3,3 +3,4 @@ graph-creator.js
 graph-creator.css 
 /__pycache__/*
 /James_test/*
+/doc/build/*

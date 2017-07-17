@@ -78,6 +78,7 @@ Simulation Properties
 
 	simulate_cont.is_controllable
 	simulate_cont.is_observable
+	simulate_cont.is_stable
 
 
 .. _discrete:
@@ -138,6 +139,7 @@ Simulation Properties
 
 	simulate_disc.is_controllable
 	simulate_disc.is_observable
+	simulate_disc.is_stable
 """
 
 
@@ -496,6 +498,20 @@ class simulate_cont:
 				return [controllable,y_o]
 			else:
 				print("Please set C.")
+
+	def is_stable(self):
+		"""Tests if the simulate_cont object is stable.
+
+		Returns:
+			bool: Boolean, true if the simulate_cont configuration is observable
+			array: The eigenvalues of the A matrix
+		"""
+		if (self.ready()):
+			eigs = linalg.eigvals(self.A)
+			toReturn = False
+			if ((np.real(eigs)<=0).sum()) == np.shape(self.A)[0]:
+				toReturn = True
+			return [toReturn,eigs]
 
 	def save_state(self,filename,times,plot_points=None,xs=None):	
 		"""Save a set of state vectors.
@@ -886,6 +902,20 @@ class simulate_disc:
 				return [observable,y_o]
 			else:
 				print("Please set C.")
+
+	def is_stable(self):
+		"""Tests if the simulate_disc object is stable.
+
+		Returns:
+			bool: Boolean, true if the simulate_cont configuration is observable
+			array: The eigenvalues of the A matrix
+		"""
+		if(self.ready()):
+			eigs = linalg.eigvals(self.A)
+			toReturn = False
+			if ((np.abs(eigs)<1).sum()) == np.shape(self.A)[0]:
+				toReturn = True
+			return [toReturn,eigs]
 
 	def save_state(self,filename,ks,xs=None):
 		"""Summary

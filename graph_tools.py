@@ -4,6 +4,26 @@ Graph Tools (:mod:`graph_tools`)
 
 This module contains network related functions.
 
+Generating Matrices
+*******************
+
+.. autosummary::
+	:toctree:
+
+	generate_rand
+	generate_laplacian
+	generate_degree
+	generate_incidence
+
+
+Displacing and Importing Matrices
+*********************************
+
+.. autosummary::
+	:toctree:
+
+	show_graph
+	load_from_file
 """
 import numpy as np
 import networkx as nx
