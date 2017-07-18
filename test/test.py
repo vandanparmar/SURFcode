@@ -14,7 +14,8 @@ C = np.array([[1,0],[0,1]])
 print(test_1.A)
 print(test_1.B)
 print(test_1.C)
-test_1.plot_impulse([0,100],inputs=[1,2],outputs=[2,1],grid=True)
+test_1.set_plot_points(200)
+test_1.plot_step([0,100],grid=True)
 
 
 # print(linalg.det(np.matmul(B,B.conj().T)))

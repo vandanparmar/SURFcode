@@ -67,6 +67,7 @@ Plotting and Saving
 	simulate_cont.plot
 	simulate_cont.plot_state
 	simulate_cont.plot_output
+	simulate_cont.plot_impulse
 	simulate_cont.save_state
 	simulate_cont.save_output
 
@@ -131,6 +132,7 @@ Plotting and Saving
 	simulate_disc.save_state
 	simulate_disc.save_output
 
+
 Simulation Properties
 **********************
 
@@ -141,10 +143,6 @@ Simulation Properties
 	simulate_disc.is_observable
 	simulate_disc.is_stable
 """
-
-
-#__all__ = ["random_mat","random_stable","random_unit"]
-
 import numpy as np
 from scipy import integrate
 from scipy import linalg
@@ -227,7 +225,7 @@ def plot_sio(self,times,disc,grid, x=None, y=None,u=None):
 	plt.subplots_adjust(hspace = 0.5)
 	plt.show()
 
-def plot_resp(self,times,inputs,outputs,disc,grid,resp):
+def plot_resp(self,times,inputs,outputs,disc,grid,resp,type_i):
 	if(disc):
 		xlabel = "K"
 		title = " for k = "+str(times[0])+' to k = '+str(times[-1])+'.'
@@ -243,7 +241,7 @@ def plot_resp(self,times,inputs,outputs,disc,grid,resp):
 				plt.step(times,resp[:,output_i-1,input_i-1],label=label)
 			else:
 				plt.plot(times,resp[:,output_i-1,input_i-1],label=label)
-		plt.title("Impulse response from input "+str(input_i)+title)
+		plt.title(type_i +" response from input "+str(input_i)+title)
 		plt.ylabel("Output")
 		plt.xlabel(xlabel)
 		plt.legend()
@@ -548,27 +546,6 @@ class simulate_cont:
 			else:
 				print("Please set A, B and C.")	
 
-	def plot_impulse(self,times,inputs=None, outputs=None,plot_points=None,filename=None,grid=False):
-		"""Group by inputs, select arrays of inputs / outputs.
-		"""
-		if(self.ready()):
-			if(self.B is not None and self.C is not None):
-				start,end = times
-				t = np.linspace(start,end,self.plot_points)
-				if(inputs is None):
-					inputs = np.arange(1,np.shape(self.B)[1]+1)
-				if(outputs is None):
-					outputs = np.arange(1,np.shape(self.C)[0]+1)
-				if(plot_points is None):
-					plot_points = self.plot_points
-				impulse = np.array([np.matmul(self.C,np.matmul(linalg.expm(self.A*t_i),self.B)) for t_i in t])
-				#impulse[t,n_c,n_b]
-				plot_resp(self,t,inputs,outputs,False,grid,impulse)
-				if(filename is not None):
-					return
-			else:
-				print("Please set A, B and C.")
-
 	def save_state(self,filename,times,plot_points=None,xs=None):	
 		"""Save a set of state vectors.
 		
@@ -622,16 +599,14 @@ class simulate_cont:
 		return self
 
 	def plot(self,times,plot_points=None,filename=None,grid=False):
-		"""Summary
+		"""Plot both states and outputs (if C is given) of a simulate_cont object for a given amount of time.
 		
 		Args:
-		    times (TYPE): Description
-		    plot_points (None, optional): Description
-		    filename (None, optional): Description
-		    grid (bool, optional): Description
+		    times (array): An array for the form [start time, end time]
+		    plot_points (int, optional): The number of points to use when plotting, default is the internal value, defaulted at 100
+		    filename (str, optional): Filename to save output to, does not save if none provided
+		    grid (bool, optional): Display grid, default is false
 		
-		Returns:
-		    TYPE: Description
 		"""
 		if(self.ready()):
 			if(self.C is None):
@@ -652,13 +627,14 @@ class simulate_cont:
 				self.save_output(filename_y,times,points,y)
 
 	def plot_state(self,times,plot_points=None,filename=None,grid=False):
-		"""Summary
+		"""Plot both states of a simulate_cont object for a given amount of time.
 		
 		Args:
-		    times (TYPE): Description
-		    plot_points (None, optional): Description
-		    filename (None, optional): Description
-		    grid (bool, optional): Description
+		    times (array): An array for the form [start time, end time]
+		    plot_points (int, optional): The number of points to use when plotting, default is the internal value, defaulted at 100
+		    filename (str, optional): Filename to save output to, does not save if none provided
+		    grid (bool, optional): Display grid, default is false
+		
 		"""
 		if(self.ready()):
 			if(plot_points is None):
@@ -672,13 +648,14 @@ class simulate_cont:
 				self.save_state(filename,times,points,x)
 
 	def plot_output(self,times,plot_points=None,filename=None,grid=False):
-		"""Summary
+		"""Plot both outputs (if C is given) of a simulate_cont object for a given amount of time.
 		
 		Args:
-		    times (TYPE): Description
-		    plot_points (None, optional): Description
-		    filename (None, optional): Description
-		    grid (bool, optional): Description
+		    times (array): An array for the form [start time, end time]
+		    plot_points (int, optional): The number of points to use when plotting, default is the internal value, defaulted at 100
+		    filename (str, optional): Filename to save output to, does not save if none provided
+		    grid (bool, optional): Display grid, default is false
+		
 		"""
 		if(self.ready()):
 			if(plot_points is None):
@@ -690,6 +667,49 @@ class simulate_cont:
 			plot_sio(self,t,False,grid,y=y)
 			if(filename  is not None):
 				self.save_output(filename,times,points,y)
+
+	def plot_impulse(self,times,inputs=None, outputs=None,plot_points=None,filename=None,grid=False):
+		"""Group by inputs, select arrays of inputs / outputs.
+		"""
+		if(self.ready()):
+			if(self.B is not None and self.C is not None):
+				start,end = times
+				t = np.linspace(start,end,self.plot_points)
+				if(inputs is None):
+					inputs = np.arange(1,np.shape(self.B)[1]+1)
+				if(outputs is None):
+					outputs = np.arange(1,np.shape(self.C)[0]+1)
+				if(plot_points is None):
+					plot_points = self.plot_points
+				impulse = np.array([np.matmul(self.C,np.matmul(linalg.expm(self.A*t_i),self.B)) for t_i in t])
+				#impulse[t,n_c,n_b]
+				plot_resp(self,t,inputs,outputs,False,grid,impulse,"impulse")
+				if(filename is not None):
+					return
+			else:
+				print("Please set A, B and C.")
+
+	def plot_step(self,times,inputs=None, outputs=None,plot_points=None,filename=None,grid=False):
+		"""
+		"""
+		if(self.ready()):
+			if(self.B is not None and self.C is not None):
+				start,end = times
+				t = np.linspace(start,end,self.plot_points)
+				if(inputs is None):
+					inputs = np.arange(1,np.shape(self.B)[1]+1)
+				if(outputs is None):
+					outputs = np.arange(1,np.shape(self.C)[0]+1)
+				if(plot_points is None):
+					plot_points = self.plot_points
+				inv_a = linalg.inv(self.A)
+				step = np.array([np.matmul(self.C,np.matmul(inv_a,np.matmul(linalg.expm(self.A*t_i)-np.identity(np.shape(self.A)[0]),self.B))) for t_i in t])
+				#step[t,n_c,n_b]
+				plot_resp(self,t,inputs,outputs,False,grid,step,"Step")
+				if(filename is not None):
+					return
+			else:
+				print("Please set A, B and C.")
 
 class simulate_disc:
 	"""Class to contain objects and functions for carrying out discrete simulations of the form,
