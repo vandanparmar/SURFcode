@@ -227,9 +227,34 @@ def plot_sio(self,times,disc,grid, x=None, y=None,u=None):
 	plt.subplots_adjust(hspace = 0.5)
 	plt.show()
 
+def plot_resp(self,times,inputs,outputs,disc,grid,resp):
+	if(disc):
+		xlabel = "K"
+		title = " for k = "+str(times[0])+' to k = '+str(times[-1])+'.'
+	else:
+		xlabel = "Time"
+		title = ' for t = '+str(times[0])+' to t = '+str(times[-1])+'.'
+	t,n_c,n_b = np.shape(resp)
+	for i,input_i in enumerate(inputs):
+		plt.subplot(len(inputs),1,i+1)
+		for o,output_i in enumerate(outputs):
+			label = "Output "+str(output_i)
+			if(disc):
+				plt.step(times,resp[:,output_i-1,input_i-1],label=label)
+			else:
+				plt.plot(times,resp[:,output_i-1,input_i-1],label=label)
+		plt.title("Impulse response from input "+str(input_i)+title)
+		plt.ylabel("Output")
+		plt.xlabel(xlabel)
+		plt.legend()
+		if(grid):
+			plt.grid(color= '#a6a5a6')
+	plt.subplots_adjust(hspace=0.5)
+	plt.show()
+
 class simulate_cont:
 	"""Class to contain objects and functions for carrying out continuous simulations of the form,
-	:math:`\\underline{am i going to do this?}`
+	
 
 	Attributes:
 	    A (ndarray): Drift matrix
@@ -258,7 +283,7 @@ class simulate_cont:
 			if(no is None):
 				self.C = None
 			else:
-				self.C = random_mat(n,no)
+				self.C = random_mat(no,n)
 			if(nu is None):
 				self.B = None
 			else:
@@ -513,6 +538,37 @@ class simulate_cont:
 				toReturn = True
 			return [toReturn,eigs]
 
+	def impulse(self,time):
+		"""
+		"""
+		if(self.ready()):
+			if(self.B is not None and self.C is not None):
+				h = np.matmul(np.matmul(self.C,np.expm(self.A*time)),self.B)
+				return h
+			else:
+				print("Please set A, B and C.")	
+
+	def plot_impulse(self,times,inputs=None, outputs=None,plot_points=None,filename=None,grid=False):
+		"""Group by inputs, select arrays of inputs / outputs.
+		"""
+		if(self.ready()):
+			if(self.B is not None and self.C is not None):
+				start,end = times
+				t = np.linspace(start,end,self.plot_points)
+				if(inputs is None):
+					inputs = np.arange(1,np.shape(self.B)[1]+1)
+				if(outputs is None):
+					outputs = np.arange(1,np.shape(self.C)[0]+1)
+				if(plot_points is None):
+					plot_points = self.plot_points
+				impulse = np.array([np.matmul(self.C,np.matmul(linalg.expm(self.A*t_i),self.B)) for t_i in t])
+				#impulse[t,n_c,n_b]
+				plot_resp(self,t,inputs,outputs,False,grid,impulse)
+				if(filename is not None):
+					return
+			else:
+				print("Please set A, B and C.")
+
 	def save_state(self,filename,times,plot_points=None,xs=None):	
 		"""Save a set of state vectors.
 		
@@ -637,7 +693,11 @@ class simulate_cont:
 
 class simulate_disc:
 	"""Class to contain objects and functions for carrying out discrete simulations of the form,
-	$$\\underline{am i going to do this?}$$
+	.. math::
+		x[k+1] = \mathbf{A}x[k] + \mathbf{B}u[k] \n
+		y[k] = \mathbf{C}x[k] + \mathbf{D}u[k]
+
+	where A is the drift matrix, B the input matrix and C the output matrix.
 
 	
 	Attributes:
@@ -666,7 +726,7 @@ class simulate_disc:
 			if(no is None):
 				self.C = None
 			else:
-				self.C = random_mat(n,no)
+				self.C = random_mat(no,n)
 			if(nu is None):
 				self.B = None
 			else:

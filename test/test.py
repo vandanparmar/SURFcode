@@ -6,22 +6,28 @@ sys.path.append(
 import sim_tools as st
 from scipy import linalg
 import numpy as np
-test_1 = st.simulate_disc(5,4,3)
+test_1 = st.simulate_cont(2,3,4)
 A = np.array([[-1,0],[0,-1]])
 B = np.array([[1,0],[1,1],[1,0],[1,0]]).T
 C = np.array([[1,0],[0,1]])
 #test_1.setABC(A,C=C,B=B)
-print(linalg.det(np.matmul(B,B.conj().T)))
-print(linalg.eigvals(np.matmul(C,C.conj().T)))
-cont, x_c = test_1.is_controllable()
-print(cont)
-print(linalg.eigvals(x_c))
-obvs, y_o = test_1.is_observable()
-print(obvs)
-print(linalg.eigvals(y_o))
-stab, eigs = test_1.is_stable()
-print(stab)
-print(eigs)
+print(test_1.A)
+print(test_1.B)
+print(test_1.C)
+test_1.plot_impulse([0,100],inputs=[1,2],outputs=[2,1],grid=True)
+
+
+# print(linalg.det(np.matmul(B,B.conj().T)))
+# print(linalg.eigvals(np.matmul(C,C.conj().T)))
+# cont, x_c = test_1.is_controllable()
+# print(cont)
+# print(linalg.eigvals(x_c))
+# obvs, y_o = test_1.is_observable()
+# print(obvs)
+# print(linalg.eigvals(y_o))
+# stab, eigs = test_1.is_stable()
+# print(stab)
+# print(eigs)
 # x = test_1.get_x(5)
 # y = test_1.get_y(5)
 
