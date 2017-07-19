@@ -97,7 +97,9 @@ def show_graph(adjacency_matrix):
 	gr = nx.Graph()
 	gr.add_edges_from(edges)
 	# nx.draw(gr) # edited to include labels
-	nx.draw_spring(gr)
+	mapping=dict(zip(gr.nodes(),np.arange(1,len(gr.nodes())+1)))
+	gr = nx.relabel_nodes(gr,mapping)
+	nx.draw_spring(gr,with_labels=True,font_color='w')
 	plt.show() 
 
 def save_to_file(adjacency_matrix,filename):

@@ -68,6 +68,7 @@ Plotting and Saving
 	simulate_cont.plot_state
 	simulate_cont.plot_output
 	simulate_cont.plot_impulse
+	simulate_cont.plot_step
 	simulate_cont.save_state
 	simulate_cont.save_output
 
@@ -265,9 +266,9 @@ class simulate_cont:
 		"""Generate a simulate_cont object.
 		
 		Args:
-		    n (None, optional): Dimensions of n x n drift matrix, A
-		    no (None, optional): Dimension of n x no input matrix, B
-		    nu (None, optional): Dimensions of nu x n output matrix, C
+		    n (int, optional): Dimensions of n x n drift matrix, A
+		    no (int, optional): Dimension of n x no input matrix, B
+		    nu (int, optional): Dimensions of nu x n output matrix, C
 		"""
 		if(n is None):
 			print('Initilising with empty matrices, please specify using "setABC".')
@@ -294,8 +295,8 @@ class simulate_cont:
 		
 		Args:
 		    A (ndarray): Drift matrix
-		    B (None, optional): Input matrix
-		    C (None, optional): Output matrix
+		    B (ndarray, optional): Input matrix
+		    C (ndarray, optional): Output matrix
 		
 		Returns:
 		    simulate_cont: Updated simulate_cont object
@@ -475,7 +476,7 @@ class simulate_cont:
 		
 		Args:
 		    times (array): Array of times at which to return output vectors
-		    xs (None, optional): Existing array of state vectors
+		    xs (ndarray, optional): Existing array of state vectors
 		
 		Returns:
 		    ndarray: n0 x len(times) set of output vectors
@@ -514,11 +515,11 @@ class simulate_cont:
 		"""
 		if (self.ready()):
 			if(self.C is not None):
-				q = -np.matmul(self.C,self.C.conj().T)
+				q = -np.matmul(self.C.conj().T,self.C)
 				y_o = linalg.solve_lyapunov(self.A.conj().T,q)
 				y_o = y_o.conj().T
-				controllable = (linalg.eigvals(y_o)>0).sum() == np.shape(self.A)[0]
-				return [controllable,y_o]
+				observable = (linalg.eigvals(y_o)>0).sum() == np.shape(self.A)[0]
+				return [observable,y_o]
 			else:
 				print("Please set C.")
 
@@ -545,6 +546,17 @@ class simulate_cont:
 				return h
 			else:
 				print("Please set A, B and C.")	
+
+	def step(self,time):
+		"""
+		"""
+		if(self.ready()):
+			if(self.B is not None and self.C is not None):
+				a_inv = linalg.inv(self.A)
+				s = np.matmul(self.C,np.matmul(a_inv,np.matmul(linalg.expm(time*self.A)-np.identity(np.shape(self.A)[0]),self.B)))
+				return s
+			else:
+				print("Please set A,B and C first.")
 
 	def save_state(self,filename,times,plot_points=None,xs=None):	
 		"""Save a set of state vectors.
@@ -627,7 +639,7 @@ class simulate_cont:
 				self.save_output(filename_y,times,points,y)
 
 	def plot_state(self,times,plot_points=None,filename=None,grid=False):
-		"""Plot both states of a simulate_cont object for a given amount of time.
+		"""Plot states of a simulate_cont object for a given amount of time.
 		
 		Args:
 		    times (array): An array for the form [start time, end time]
@@ -648,7 +660,7 @@ class simulate_cont:
 				self.save_state(filename,times,points,x)
 
 	def plot_output(self,times,plot_points=None,filename=None,grid=False):
-		"""Plot both outputs (if C is given) of a simulate_cont object for a given amount of time.
+		"""Plot outputs (if C is given) of a simulate_cont object for a given amount of time.
 		
 		Args:
 		    times (array): An array for the form [start time, end time]
@@ -683,7 +695,7 @@ class simulate_cont:
 					plot_points = self.plot_points
 				impulse = np.array([np.matmul(self.C,np.matmul(linalg.expm(self.A*t_i),self.B)) for t_i in t])
 				#impulse[t,n_c,n_b]
-				plot_resp(self,t,inputs,outputs,False,grid,impulse,"impulse")
+				plot_resp(self,t,inputs,outputs,False,grid,impulse,"Impulse")
 				if(filename is not None):
 					return
 			else:
@@ -721,18 +733,18 @@ class simulate_disc:
 
 	
 	Attributes:
-	    A (TYPE): Drift Matrix
-	    B (TYPE): Input Matrix
-	    C (TYPE): Output Matrix
-	    x0 (TYPE): Initial Conditions
+	    A (ndarray): Drift Matrix
+	    B (ndarray): Input Matrix
+	    C (ndarray): Output Matrix
+	    x0 (ndarray): Initial Conditions
 	"""
 	def __init__(self, n=None, no=None, nu=None):
 		"""Generate a simulate_disc object.
 		
 		Args:
-		    n (None, optional): Dimensions of n x n drift matrix, A
-		    no (None, optional): Dimension of n x no input matrix, B
-		    nu (None, optional): Dimensions of nu x n output matrix, C
+		    n (int, optional): Dimensions of n x n drift matrix, A
+		    no (int, optional): Dimension of n x no input matrix, B
+		    nu (int, optional): Dimensions of nu x n output matrix, C
 		"""
 		if(n is None):
 			print('Initilising with empty matrices, please specify using "setABC".')
@@ -754,15 +766,15 @@ class simulate_disc:
 			self.x0 = np.random.rand(n,1)			
 
 	def setABC(self,A,B=None,C=None):
-		"""Summary
+		"""Set A, B, C for matrices for a discrete simulation.
 		
 		Args:
-		    A (TYPE): Description
-		    B (None, optional): Description
-		    C (None, optional): Description
+		    A (ndarray): Drift matrix
+		    B (ndarray, optional): Input matrix
+		    C (ndarray, optional): Output matrix
 		
 		Returns:
-		    TYPE: Description
+		    simulate_disc: Updated simulate_disc object
 		"""
 		shapeA = np.shape(A)
 		if(shapeA[0] == shapeA[1]):
@@ -793,11 +805,6 @@ class simulate_disc:
 		return self
 
 	def ready(self):
-		"""Summary
-		
-		Returns:
-		    TYPE: Description
-		"""
 		if(self.__ready):
 			return True
 		else:
@@ -805,13 +812,13 @@ class simulate_disc:
 			return False
 
 	def setA(self,A):
-		"""Summary
+		"""Set drift matrix, A.
 		
 		Args:
-		    A (TYPE): Description
+		    A (ndarray): n x n drift matrix, A
 		
 		Returns:
-		    TYPE: Description
+		    simulate_disc: Updated simulate_cont object
 		"""
 		if(self.C  is not None):
 			if(np.shape(A)[0]==np.shape(self.C)[0]):
@@ -823,13 +830,13 @@ class simulate_disc:
 		return self
 
 	def setB(self,B):
-		"""Summary
+		"""Set input matrix, B.
 		
 		Args:
-		    B (TYPE): Description
+		    B (ndarray): n x no input matrix, B
 		
 		Returns:
-		    TYPE: Description
+		    simulate_disc: Updated simulate_cont object
 		"""
 		n = np.shape(self.A)[0]
 		if(np.shape(B)[0]==n):
@@ -842,13 +849,13 @@ class simulate_disc:
 		return self
 
 	def setC(self,C):
-		"""Summary
+		"""Set output matrix, C.
 		
 		Args:
-		    C (TYPE): Description
+		    C (ndarray): nu x n output matrix, C
 		
 		Returns:
-		    TYPE: Description
+		    simulate_disc: Updated simulate_cont object
 		"""
 		n = np.shape(self.A)[0]
 		if(np.shape(C)[1]==n):
@@ -861,13 +868,13 @@ class simulate_disc:
 		return self
 
 	def setx0(self,x0):
-		"""Summary
+		"""Set intital conditions, x0.
 		
 		Args:
-		    x0 (TYPE): Description
+		    x0 (ndarray): n x 1 initial conditions, x0
 		
 		Returns:
-		    TYPE: Description
+		    simulate_disc: Updated simulate_cont object
 		"""
 		if(np.shape(x0)==(np.shape(self.A)[0],1)):
 			self.x0 = x0
@@ -876,39 +883,39 @@ class simulate_disc:
 		return self
 
 	def get_x(self,k):
-		"""Summary
+		"""Calculate a state vector at a particular time.
 		
 		Args:
-		    k (TYPE): Description
+		    k (int): Index at which to return state vector
 		
 		Returns:
-		    TYPE: Description
+		    ndarray: n x 1 state vector at index value k
 		"""
 		if(self.ready()):
 			x = np.matmul(np.linalg.matrix_power(self.A,k),self.x0)
 			return x
 
 	def get_y(self,k):
-		"""Summary
+		"""Calculate an output vector at a particular time.
 		
 		Args:
-		    k (TYPE): Description
+		    k (int): Index at which to return output vector
 		
 		Returns:
-		    TYPE: Description
+		    ndarray: no x 1 output vector at index k
 		"""
 		if(self.ready()):
 			y = np.matmul(self.C,self.get_x(k))
 			return y
 
 	def get_x_set(self,ks):
-		"""Summary
+		"""Calculate a set of x values.
 		
 		Args:
-		    ks (TYPE): Description
+		    ks (array): Array of indices at which to return state vectors
 		
 		Returns:
-		    TYPE: Description
+		    ndarray: n x len(ks) set of state vectors
 		"""
 		if(self.ready()):
 			xs = self.get_x(ks[0])
@@ -919,14 +926,14 @@ class simulate_disc:
 		return xs
 
 	def get_y_set(self,ks,xs=None):
-		"""Summary
+		"""Calculate a set of y values.
 		
 		Args:
-		    ks (TYPE): Description
-		    xs (None, optional): Description
+		    ks (array): Array of times at which to return output vectors
+		    xs (ndarray, optional): Existing array of state vectors
 		
 		Returns:
-		    TYPE: Description
+		    ndarray: no x len(ks) set of output vectors
 		"""
 		if(self.ready()):
 			if(xs is None):
@@ -940,11 +947,6 @@ class simulate_disc:
 		return ys
 
 	def get_C_dim(self):
-		"""Summary
-		
-		Returns:
-		    TYPE: Description
-		"""
 		if(self.ready()):
 			dim = np.shape(self.C)
 			if(len(dim)==1):
@@ -954,10 +956,11 @@ class simulate_disc:
 			return toReturn
 
 	def is_controllable(self): #should be reachable?
-		"""Summary
+		"""Tests if the simulate_disc object is controllable.
 		
 		Returns:
-		    TYPE: Description
+		    bool: Boolean, true if the simulate_disc configuration is controllable
+		    ndarray: Controllability gramiam from discrete Lyapunov equation
 		"""
 		if (self.ready()):
 			if (self.B is not None):
@@ -969,15 +972,17 @@ class simulate_disc:
 				print("Please set B.")
 
 	def is_observable(self):
-		"""Summary
+		"""Tests if the simulate_disc object is observable.
 		
 		Returns:
-		    TYPE: Description
+		    bool: Boolean, true if the simulate_disc configuration is observable
+		    ndarray: Observability gramiam from discrete Lyapunov equation
 		"""
 		if (self.ready()):
 			if (self.C is not None):
-				q = np.matmul(self.C,self.C.conj().T)
+				q = np.matmul(self.C.conj().T,self.C)
 				y_o = linalg.solve_discrete_lyapunov(self.A,q)
+				y_o = y_o.conj().T
 				observable = (linalg.eigvals(y_o)>0).sum() == np.shape(self.A)[0]
 				return [observable,y_o]
 			else:
@@ -997,16 +1002,27 @@ class simulate_disc:
 				toReturn = True
 			return [toReturn,eigs]
 
+	def impulse(self,k):
+		"""
+		"""
+		if(self.ready()):
+			if(self.B is not None and self.C is not None):
+				h = np.matmul(np.matmul(self.C,np.linalg.matrix_power(self.A,(k-1))),self.B)
+				return h
+			else:
+				print("Please set A, B and C.")	
+
+
 	def save_state(self,filename,ks,xs=None):
-		"""Summary
+		"""Save a set of state vectors.
 		
 		Args:
-		    filename (TYPE): Description
-		    ks (TYPE): Description
-		    xs (None, optional): Description
+		    filename (str): Name of file or filepath for save file
+		    ks (array): Array of indices of state vectors to be saved
+		    xs (ndarray, optional): Existing set fo state vectors to save
 		
 		Returns:
-		    TYPE: Description
+		    simulate_disc: To allow for chaining
 		"""
 		if(self.ready()):
 			eigvals = linalg.eigvals(self.A)
@@ -1021,15 +1037,15 @@ class simulate_disc:
 		return self
 
 	def save_output(self,filename,ks,ys=None):
-		"""Summary
+		"""Save a set of output vectors
 		
 		Args:
-		    filename (TYPE): Description
-		    ks (TYPE): Description
-		    ys (None, optional): Description
+		    filename (str): Name of file or filepath for save file
+		    ks (array): Array of indices of output vectors to be saved
+		    ys (ndarray, optional): Existing set of output vectors to save
 		
 		Returns:
-		    TYPE: Description
+		    simulate_disc: To allow for chaining
 		"""
 		if(self.ready()):
 			eigvals = linalg.eigvals(self.A)
@@ -1044,15 +1060,13 @@ class simulate_disc:
 		return self
 
 	def plot(self,ks,filename=None, grid=False):
-		"""Summary
+		"""Plot both states and outputs (if C is given) of a simulate_disc object for a given set of indices.
 		
 		Args:
-		    ks (TYPE): Description
-		    filename (None, optional): Description
-		    grid (bool, optional): Description
+		    ks (array): An array for the form [start index, end index]
+		    filename (str, optional): Filename to save output to, does not save if none provided
+		    grid (bool, optional): Display grid, default is false
 		
-		Returns:
-		    TYPE: Description
 		"""
 		if(self.ready()):
 			if(self.C is None):
@@ -1070,12 +1084,13 @@ class simulate_disc:
 				self.save_output(filename_y,ks,y)
 
 	def plot_state(self,ks,filename=None, grid=False):
-		"""Summary
+		"""Plot states of a simulate_disc object for a given set of indices.
 		
 		Args:
-		    ks (TYPE): Description
-		    filename (None, optional): Description
-		    grid (bool, optional): Description
+		    ks (array): An array for the form [start index, end index]
+		    filename (str, optional): Filename to save output to, does not save if none provided
+		    grid (bool, optional): Display grid, default is false
+		
 		"""
 		if(self.ready()):
 			start,end = ks
@@ -1086,12 +1101,13 @@ class simulate_disc:
 				self.save_state(filename,ks,x)
 
 	def plot_output(self,ks,filename=None, grid=False):
-		"""Summary
+		"""Plot outputs (if C is given) of a simulate_disc object for a given set of indices.
 		
 		Args:
-		    ks (TYPE): Description
-		    filename (None, optional): Description
-		    grid (bool, optional): Description
+		    ks (array): An array for the form [start index, end index]
+		    filename (str, optional): Filename to save output to, does not save if none provided
+		    grid (bool, optional): Display grid, default is false
+		
 		"""
 		if(self.ready()):
 			start,end = ks
@@ -1100,6 +1116,27 @@ class simulate_disc:
 			plot_sio(self,k,True,grid,y=y)
 			if(filename is not None):
 				self.save_state(filename,ks,y)
+
+	def plot_impulse(self,ks,inputs=None, outputs=None,filename=None,grid=False):
+		"""Group by inputs, select arrays of inputs / outputs.
+		"""
+		if(self.ready()):
+			if(self.B is not None and self.C is not None):
+				start,end = ks
+				k = np.arange(start,end+1)
+				if(inputs is None):
+					inputs = np.arange(1,np.shape(self.B)[1]+1)
+				if(outputs is None):
+					outputs = np.arange(1,np.shape(self.C)[0]+1)
+				impulse = np.zeros((len(k),np.shape(self.C)[0],np.shape(self.B)[1]))
+				impulse[1:] = np.array([np.matmul(self.C,np.matmul(np.linalg.matrix_power(self.A,k_i-1),self.B)) for k_i in k[1:]])
+				#impulse[k,n_c,n_b]
+				plot_resp(self,k,inputs,outputs,True,grid,impulse,"Impulse")
+				if(filename is not None):
+					return
+			else:
+				print("Please set A, B and C.")
+
 
 class power_network:
 	"""Class for representing power networks and generating discrete and continuous simulations of power networks.
@@ -1145,7 +1182,8 @@ class power_network:
 		A[::2,1::2] = self.dt*eye_n
 		A[1::2,1::2] = d_m_set
 		B[1::2,:] = eye_n
-		toReturn.setABC(A,B)
+		C = np.transpose(B)
+		toReturn.setABC(A,B=B,C=C)
 		return toReturn
 
 	def generate_disc_sim(self):
@@ -1169,5 +1207,10 @@ class power_network:
 		A[::2,1::2] = self.dt
 		A[1::2,1::2] = d_m_set
 		B[1::2,:] = eye_n
-		toReturn.setABC(A,B)
+		C = np.transpose(B)
+		toReturn.setABC(A,B=B,C=C)
 		return toReturn
+
+	def show_network(self):
+		show_graph(self.Adj)
+		return self

@@ -6,7 +6,8 @@ sys.path.append(
 import sim_tools as st
 from scipy import linalg
 import numpy as np
-test_1 = st.simulate_cont(2,3,4)
+import graph_tools as gt
+test_1 = st.simulate_disc(2,3,4)
 A = np.array([[-1,0],[0,-1]])
 B = np.array([[1,0],[1,1],[1,0],[1,0]]).T
 C = np.array([[1,0],[0,1]])
@@ -14,9 +15,9 @@ C = np.array([[1,0],[0,1]])
 print(test_1.A)
 print(test_1.B)
 print(test_1.C)
-test_1.set_plot_points(200)
-test_1.plot_step([0,100],grid=True)
-
+#test_1.set_plot_points(200)
+#test_1.steo([0,100],grid=True)
+print(test_1.impulse(5))
 
 # print(linalg.det(np.matmul(B,B.conj().T)))
 # print(linalg.eigvals(np.matmul(C,C.conj().T)))
@@ -45,8 +46,17 @@ test_1.plot_step([0,100],grid=True)
 # test.setA(A).setC(C)
 # test.plot([1,10],grid=True)
 
-# pn = st.power_network(st.load_from_file("test/test_graph_1.json"))
-# p_cont = pn.generate_cont_sim().setx0(np.transpose([[10]*10]))
+pn = st.power_network(st.load_from_file("test/test_graph_1.json"))
+p_cont = pn.generate_disc_sim()
+#p_cont = st.simulate_cont(3,4,5)
+print(np.shape(p_cont.A))
+print(np.shape(p_cont.B))
+print(np.shape(p_cont.C))
+ob,w_o = p_cont.is_observable()
+print(ob,linalg.eigvals(w_o))
+co,w_c = p_cont.is_controllable()
+print(co,linalg.eigvals(w_c))
+p_cont.plot_impulse([0,15],grid=True,inputs=[5])
 # p_disc = pn.generate_disc_sim()
 
 # print(p_cont.A)
