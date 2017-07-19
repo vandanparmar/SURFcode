@@ -955,7 +955,7 @@ class simulate_disc:
 				toReturn = dim[0]
 			return toReturn
 
-	def is_controllable(self): #should be reachable?
+	def is_controllable(self):
 		"""Tests if the simulate_disc object is controllable.
 		
 		Returns:
@@ -1011,7 +1011,6 @@ class simulate_disc:
 				return h
 			else:
 				print("Please set A, B and C.")	
-
 
 	def save_state(self,filename,ks,xs=None):
 		"""Save a set of state vectors.
