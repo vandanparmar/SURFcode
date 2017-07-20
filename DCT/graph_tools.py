@@ -43,7 +43,7 @@ def generate_rand(n,p):
 	    TYPE: Description
 	"""
 	G = nx.connected_watts_strogatz_graph(n,3,p)
-	toReturn = nx.to_numpy_matrix
+	toReturn = nx.to_numpy_matrix(G)
 	return toReturn
 
 def generate_laplacian(adjacency_matrix):
