@@ -6,9 +6,14 @@
 Welcome to Distributed Controller Toolbox's documentation!
 ==========================================================
 
+.. module:: DCT
+
 .. toctree::
    :maxdepth: 1
    :caption: Contents:
 
-   sim_tools
-   graph_tools
+   DCT.DCT_cont
+   DCT.DCT_disc
+   DCT.graph_tools
+   DCT.sim_tools
+   DCT.DCT_network
