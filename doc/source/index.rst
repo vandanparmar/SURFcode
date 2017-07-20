@@ -17,3 +17,4 @@ Welcome to Distributed Controller Toolbox's documentation!
    DCT.graph_tools
    DCT.sim_tools
    DCT.DCT_network
+   Examples
