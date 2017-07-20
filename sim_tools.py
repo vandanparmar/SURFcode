@@ -1136,6 +1136,31 @@ class simulate_disc:
 			else:
 				print("Please set A, B and C.")
 
+	def plot_step(self,ks,inputs=None, outputs=None,filename=None,grid=False):
+		"""
+		"""
+		if(self.ready()):
+			if(self.B is not None and self.C is not None):
+				start,end = ks
+				k = np.arange(start,end+1)
+				if(inputs is None):
+					inputs = np.arange(1,np.shape(self.B)[1]+1)
+				if(outputs is None):
+					outputs = np.arange(1,np.shape(self.C)[0]+1)
+				step = np.zeros((len(k),np.shape(self.C)[0],np.shape(self.B)[1]))
+				prev = np.matmul(np.linalg.matrix_power(self.A,k[0]-1),self.B)
+				step[0] = np.matmul(self.C,prev)
+				for i,k_i in enumerate(k):
+					prev = np.matmul(self.A,prev)
+					step[i] = step[i-1] + np.matmul(self.C,prev)
+				#step[k,n_c,n_b]
+				plot_resp(self,k,inputs,outputs,False,grid,step,"Step")
+				if(filename is not None):
+					return
+			else:
+				print("Please set A, B and C.")
+
+
 
 class power_network:
 	"""Class for representing power networks and generating discrete and continuous simulations of power networks.

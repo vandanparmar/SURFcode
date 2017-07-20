@@ -1,0 +1,6 @@
+- discrete step
+- polar plots / modal analysis
+- examples in docs
+- cvx examples
+
+- send james email on doc instructions
