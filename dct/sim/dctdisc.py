@@ -290,6 +290,15 @@ class disc:
 				ys = np.matmul(self.C,xs)		
 		return ys
 
+	def get_B_dim(self):
+		if(self.ready()):
+			dim = np.shape(self.B)
+			if(len(dim)==1):
+				toReturn = 1
+			else:
+				toReturn = dim[1]
+			return toReturn
+
 	def get_C_dim(self):
 		if(self.ready()):
 			dim = np.shape(self.C)
@@ -505,8 +514,35 @@ class disc:
 				print("Please set A, B and C.")
 
 
-	def lqr(self,R,Q,times=None,grid=None):
+	def lqr(self,R,Q,Q_f,hor,ks=None,grid=None):
+		if(self.ready()):
+			if(self.B is not None):
+				if(R is None):
+					R = 0.2*np.eye(np.shape(self.B)[1])+1e-6
+				if(Q is None):
+					Q = np.eye(np.shape(self.A)[0])
+				P = linalg.solve_discrete_are(self.A,self.B,Q,R)
+	
 		return
 
-	def inf_lqr(self,R,Q,times=None,grid=None):
-		return
+	def inf_lqr(self,R,Q,ks=None,grid=None):
+		if(self.ready()):
+			if(self.B is not None):
+				if(R is None):
+					R = 0.2*np.eye(np.shape(self.B)[1])+1e-6
+				if(Q is None):
+					Q = np.eye(np.shape(self.A)[0])
+				P = linalg.solve_discrete_are(self.A,self.B,Q,R)
+				K = -np.matmul(linalg.inv(R+np.matmul(self.B.T,np.matmul(P,self.B))),np.matmul(self.B.T,np.matmul(P,self.A)))
+				if (ks is not None):
+					start,end = ks
+					k = np.arange(start,end+1)
+					A_p = self.A + np.matmul(self.B,K)
+					x0_p = np.matmul(np.linalg.matrix_power(A_p,start),self.x0)
+					x = x0_p
+					for k_i in k[1:]:
+						x0_p = np.matmul(A_p,x0_p)
+						x = np.append(x,x0_p,axis=1)
+					u = np.matmul(K,x)
+					plot_sio(self,k,True,grid,x=x,u=u)
+		return (P,K)

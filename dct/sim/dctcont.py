@@ -557,7 +557,7 @@ class cont:
 
 		return
 
-	def inf_LQR(self,R,Q,times=None,grid=False,plot_points=None):
+	def inf_lqr(self,R,Q,times=None,grid=False,plot_points=None):
 		if(self.ready()):
 			if(self.B is not None):
 				if(R is None):
