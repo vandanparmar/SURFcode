@@ -5,6 +5,8 @@
 
 Welcome to Distributed Controller Toolbox's documentation!
 ==========================================================
+:ref:`install`
+
 
 .. module:: DCT
 
@@ -12,9 +14,9 @@ Welcome to Distributed Controller Toolbox's documentation!
    :maxdepth: 1
    :caption: Contents:
 
-   DCT.DCT_cont
-   DCT.DCT_disc
-   DCT.graph_tools
-   DCT.sim_tools
-   DCT.DCT_network
+   dct.sim.dctcont
+   dct.sim.dctdisc
+   dct.tools.graph_tools
+   dct.tools.sim_tools
+   dct.gen.dctnetwork
    Examples

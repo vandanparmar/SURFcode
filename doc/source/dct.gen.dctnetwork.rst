@@ -1,0 +1,1 @@
+.. automodule:: dct.gen.dctnetwork

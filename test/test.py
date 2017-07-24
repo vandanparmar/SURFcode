@@ -3,22 +3,27 @@ import os.path
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 
-import DCT
+
+import dct
 from scipy import linalg
 import numpy as np
-# test_1 = DCT.disc(2,3,2)
+n_a = 9
+n_b = 7
+n_c = 5
+test_1 = dct.cont(n_a,no=n_c,nu=n_b)
+print(test_1.is_stable())
 # A = np.array([[-1,0],[0,-1]])
 # B = np.array([[1,0],[1,1],[1,0],[1,0]]).T
 # C = np.array([[1,0],[0,1]])
-# test_1.setC(C)
+# #test_1.setC(C)
 # #test_1.setABC(A,C=C,B=B)
 # print(test_1.A)
 # print("A eigvals")
 # print(linalg.eigvals(test_1.A))
 # print(test_1.B)
 # print(test_1.C)
-# test_1.plot_step([0,100],grid=True)
-# #print(test_1.impulse(5))
+test_1.inf_LQR(R=np.eye(n_b),Q = np.matmul(test_1.C.T,test_1.C),times=[0,10],grid=True)
+#print(test_1.impulse(5))
 
 # print(linalg.det(np.matmul(B,B.conj().T)))
 # print(linalg.eigvals(np.matmul(C,C.conj().T)))
@@ -47,20 +52,21 @@ import numpy as np
 # test.setA(A).setC(C)
 # test.plot([1,10],grid=True)
 
-pn = DCT.power_network(DCT.load_from_file("test/test_graph_1.json"))
-p_cont = pn.generate_disc_sim()
-#p_cont = st.simulate_cont(3,4,5)
-pn.show_network()
-print(np.shape(p_cont.A))
-print(np.shape(p_cont.B))
-print(np.shape(p_cont.C))
-print(linalg.eigvals(p_cont.A))
-ob,w_o = p_cont.is_observable()
-print(ob,linalg.eigvals(w_o))
-co,w_c = p_cont.is_controllable()
-print(co,linalg.eigvals(w_c))
-p_cont.plot_step([0,15],grid=True,inputs=[4,5])
-
+# pn = DCT.network(DCT.load_from_file("test/test_graph_1.json"))
+# p_cont = pn.generate_cont_sim()
+# #p_cont = st.simulate_cont(3,4,5)
+# # pn.show_network()
+# # print(np.shape(p_cont.A))
+# # print(np.shape(p_cont.B))
+# # print(np.shape(p_cont.C))
+# # print(linalg.eigvals(p_cont.A))
+# # ob,w_o = p_cont.is_observable()
+# # print(ob,linalg.eigvals(w_o))
+# # co,w_c = p_cont.is_controllable()
+# # print(co,linalg.eigvals(w_c))
+# #p_cont.plot_step([0,15],grid=True,inputs=[4,5])
+# R = np.eye(5)+0.1*DCT.random_mat(5,5)
+# p_cont.inf_LQR(R,np.matmul(p_cont.C.T,p_cont.C),times=[0,20],grid=True,plot_points=500)
 # print(p_cont.A)
 # print(p_cont.B)
 

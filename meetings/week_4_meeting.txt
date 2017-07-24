@@ -4,3 +4,7 @@
 - cvx examples
 
 - send james email on doc instructions
+
+- Q positive semi-definite
+- R invertible
+- return A + BK
