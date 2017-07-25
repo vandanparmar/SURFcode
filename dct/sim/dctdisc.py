@@ -521,9 +521,39 @@ class disc:
 					R = 0.2*np.eye(np.shape(self.B)[1])+1e-6
 				if(Q is None):
 					Q = np.eye(np.shape(self.A)[0])
-				P = linalg.solve_discrete_are(self.A,self.B,Q,R)
-	
-		return
+				P = np.array([Q_f])
+				K = None
+				prev = Q_f
+				for hor_i in range(hor,-1,-1):
+					APB = np.matmul(self.A.T,np.matmul(prev,self.B))
+					inv_R = linalg.inv(R + np.matmul(self.B.T,np.matmul(prev,self.B)))
+					K_i = np.array([np.matmul(inv_R,APB.T)])
+					if(K is None):
+						K = K_i
+					else:
+						K = np.append(K_i,K,axis=0)
+					P_i = Q + np.matmul(self.A.T,np.matmul(prev,self.A)) - np.matmul(APB,np.matmul(inv_R,APB.T))
+					P = np.append(np.array([P_i]),P,axis=0)
+					prev = P_i
+				if(ks is not None):
+					start,end = ks
+					if (start<0 or end > hor):
+						print("Please enter values within the horizon.")
+						return (P,K)
+					else:
+						x = np.array([self.x0])
+						u = None
+						for i in range(0,hor+1):
+							if(u is None):
+								u = np.array([np.matmul(K[i],x[i])])
+							else:
+								#print(K[i])
+								u = np.append(u,np.array([np.matmul(K[i],x[i])]),axis=0)
+							x = np.append(x,np.array([np.matmul(self.A,x[i])+np.matmul(self.B,u[i])]),axis=0)
+#						u = np.append(u,np.array([np.zeros((np.shape(self.B)[1],1))]),axis = 0)
+						k = np.arange(start,end+1)
+						plot_sio(self,k,True,grid,x=x[start:end+1,:,0].T,u=u[start:end+1,:,0].T)
+		return (P,K)
 
 	def inf_lqr(self,R,Q,ks=None,grid=None):
 		if(self.ready()):
@@ -531,7 +561,7 @@ class disc:
 				if(R is None):
 					R = 0.2*np.eye(np.shape(self.B)[1])+1e-6
 				if(Q is None):
-					Q = np.eye(np.shape(self.A)[0])
+					Q = np.eye(np.selfhape(self.A)[0])
 				P = linalg.solve_discrete_are(self.A,self.B,Q,R)
 				K = -np.matmul(linalg.inv(R+np.matmul(self.B.T,np.matmul(P,self.B))),np.matmul(self.B.T,np.matmul(P,self.A)))
 				if (ks is not None):

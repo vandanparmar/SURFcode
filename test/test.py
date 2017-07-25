@@ -12,6 +12,7 @@ n_b = 7
 n_c = 5
 test_1 = dct.disc(n_a,no=n_c,nu=n_b)
 print(test_1.is_stable())
+print(test_1.is_controllable())
 # A = np.array([[-1,0],[0,-1]])
 # B = np.array([[1,0],[1,1],[1,0],[1,0]]).T
 # C = np.array([[1,0],[0,1]])
@@ -22,7 +23,7 @@ print(test_1.is_stable())
 # print(linalg.eigvals(test_1.A))
 # print(test_1.B)
 # print(test_1.C)
-test_1.inf_lqr(R=np.eye(n_b),Q = np.matmul(test_1.C.T,test_1.C),ks=[5,10],grid=True)
+test_1.lqr(R=np.eye(n_b),Q = np.matmul(test_1.C.T,test_1.C),Q_f = np.eye(n_a)*1e6, hor = 6, ks=[0,6],grid=True)
 #print(test_1.impulse(5))
 
 # print(linalg.det(np.matmul(B,B.conj().T)))
