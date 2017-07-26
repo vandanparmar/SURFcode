@@ -25,7 +25,7 @@ from scipy import linalg,stats
 import matplotlib.pyplot as plt
 
 
-__all__ = ["random_mat","random_stable","random_unit","plot_sio","plot_resp"]
+__all__ = ["random_mat","random_stable","random_unit","plot_sio","plot_resp","compass"]
 
 def random_mat(a,b):
 	"""Generate a random a x b matrix.
@@ -137,3 +137,41 @@ def plot_resp(self,times,inputs,outputs,disc,grid,resp,type_i):
 			plt.grid(color= '#a6a5a6')
 	plt.subplots_adjust(hspace=0.5)
 	plt.show()
+
+
+def compass(pairs, arrowprops=None):
+	if (len(pairs)==4):
+		it = [(0,0),(0,1),(1,0),(1,1)]
+		tot = (2,2)
+	elif (len(pairs)==2):
+		it = [(0,0),(1,0)]
+		tot = (1,2)
+	else:
+		it = [(0,0)]
+		tot = (1,1)
+	fig, ax = plt.subplots(tot[0],tot[1],subplot_kw=dict(polar=True))
+	for coords,pair in zip(it,pairs):
+		if (tot==(2,2)):
+			ax_i = ax[coords[0],coords[1]]
+		elif (tot==(1,2)):
+			ax_i  = ax[coords[0]]
+		else:
+			ax_i = ax
+			to_pair = np.zeros((1))
+			to_pair[0] = pair[1]
+			pair = (pair[0],to_pair)
+		angles = np.angle(pair[1])
+		radii = np.abs(pair[1])
+		title = "Damping ratio = "+str((pair[0]))
+		ax_i.set_title(title)
+		def c(angle):
+			if((angle<(np.pi/2.0)) and (angle>(-np.pi/2.0))):
+				return "#00aa5e" #green
+			else:
+				return "#e62325" #red
+		[ax_i.annotate("", xy=(angle, radius), xytext=(0, 0), arrowprops=dict(arrowstyle='->',color=c(angle))) for angle, radius in zip(angles, radii)]
+		ax_i.set_ylim(0, np.max(radii))
+		plt.grid(color="#a6a5a6")
+	fig.subplots_adjust(hspace=0.3)
+	plt.show()
+

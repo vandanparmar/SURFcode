@@ -52,8 +52,11 @@ Plotting and Saving
 	cont.plot_output
 	cont.plot_impulse
 	cont.plot_step
+	cont.plot_comp
 	cont.save_state
 	cont.save_output
+	cont.lqr
+	cont.inf_lqr
 
 Simulation Properties
 **********************
@@ -75,19 +78,19 @@ class cont:
 	
 
 	Attributes:
-	    A (ndarray): Drift matrix
-	    B (ndarray): Input matrix
-	    C (ndarray): Output matrix
-	    plot_points (int): Number of points to plot when plotting, default is 100
-	    x0 (ndarray): Initial conditions
+		A (ndarray): Drift matrix
+		B (ndarray): Input matrix
+		C (ndarray): Output matrix
+		plot_points (int): Number of points to plot when plotting, default is 100
+		x0 (ndarray): Initial conditions
 	"""
 	def __init__(self,n=None,no=None,nu=None):
 		"""Generate a cont object.
 		
 		Args:
-		    n (int, optional): Dimensions of n x n drift matrix, A
-		    no (int, optional): Dimension of n x no input matrix, B
-		    nu (int, optional): Dimensions of nu x n output matrix, C
+			n (int, optional): Dimensions of n x n drift matrix, A
+			no (int, optional): Dimension of n x no input matrix, B
+			nu (int, optional): Dimensions of nu x n output matrix, C
 		"""
 		if(n is None):
 			print('Initilising with empty matrices, please specify using "setABC".')
@@ -113,12 +116,12 @@ class cont:
 		"""Set A, B, C matrices for a continuous simulation.
 		
 		Args:
-		    A (ndarray): Drift matrix
-		    B (ndarray, optional): Input matrix
-		    C (ndarray, optional): Output matrix
+			A (ndarray): Drift matrix
+			B (ndarray, optional): Input matrix
+			C (ndarray, optional): Output matrix
 		
 		Returns:
-		    cont: Updated cont object
+			cont: Updated cont object
 		"""
 		shapeA = np.shape(A)
 		if(shapeA[0] == shapeA[1]):
@@ -160,10 +163,10 @@ class cont:
 		"""Set drift matrix, A.
 		
 		Args:
-		    A (ndarray): n x n drift matrix, A
+			A (ndarray): n x n drift matrix, A
 		
 		Returns:
-		    cont: Updated cont object
+			cont: Updated cont object
 		"""
 		if(self.C  is not None):
 			if(np.shape(A)[0]==np.shape(self.C)[0]):
@@ -178,10 +181,10 @@ class cont:
 		"""Set input matrix, B.
 		
 		Args:
-		    B (ndarray): n x no input matrix, B
+			B (ndarray): n x no input matrix, B
 		
 		Returns:
-		    cont: Updated cont object
+			cont: Updated cont object
 		"""
 		n = np.shape(self.A)[0]
 		if(np.shape(B)[0]==n):
@@ -197,10 +200,10 @@ class cont:
 		"""Set output matrix, C.
 		
 		Args:
-		    C (ndarray): nu x n output matrix, C
+			C (ndarray): nu x n output matrix, C
 		
 		Returns:
-		    cont: Updated cont object
+			cont: Updated cont object
 		"""
 		n = np.shape(self.A)[0]
 		if(np.shape(C)[1]==n):
@@ -216,10 +219,10 @@ class cont:
 		"""Set intital conditions, x0.
 		
 		Args:
-		    x0 (ndarray): n x 1 initial conditions, x0
+			x0 (ndarray): n x 1 initial conditions, x0
 		
 		Returns:
-		    cont: Updated cont object
+			cont: Updated cont object
 		"""
 		if(np.shape(x0)==(np.shape(self.A)[0],1)):
 			self.x0 = x0
@@ -231,10 +234,10 @@ class cont:
 		"""Set number of points to use when plotting, plot_points.
 		
 		Args:
-		    points (int): The number of points to use
+			points (int): The number of points to use
 		
 		Returns:
-		    cont: Updated cont object
+			cont: Updated cont object
 		"""
 		if(points<10000):
 			self.plot_points = points
@@ -244,10 +247,10 @@ class cont:
 		"""Calculate a state vector at a particular time.
 		
 		Args:
-		    t (int): Time at which to return state vector
+			t (int): Time at which to return state vector
 		
 		Returns:
-		    ndarray: n x 1 state vector at time t
+			ndarray: n x 1 state vector at time t
 		"""
 		if(self.ready()):
 			x = np.matmul(linalg.expm(self.A*t),self.x0)
@@ -257,10 +260,10 @@ class cont:
 		"""Calculate an output vector at a particular time.
 		
 		Args:
-		    t (int): Time at which to return output vector
+			t (int): Time at which to return output vector
 		
 		Returns:
-		    ndarray: no x 1 output vector at time t 
+			ndarray: no x 1 output vector at time t 
 		"""
 		if(self.ready()):
 			y = np.matmul(self.C,self.get_x(t))
@@ -288,10 +291,10 @@ class cont:
 		"""Calculate a set of x values.
 		
 		Args:
-		    times (array): Array of times at which to return state vectors
+			times (array): Array of times at which to return state vectors
 		
 		Returns:
-		    ndarray: n x len(times) set of state vectors
+			ndarray: n x len(times) set of state vectors
 		"""
 		if(self.ready()):
 			xs = self.get_x(times[0])
@@ -303,11 +306,11 @@ class cont:
 		"""Calculate a set of y values.
 		
 		Args:
-		    times (array): Array of times at which to return output vectors
-		    xs (ndarray, optional): Existing array of state vectors
+			times (array): Array of times at which to return output vectors
+			xs (ndarray, optional): Existing array of state vectors
 		
 		Returns:
-		    ndarray: n0 x len(times) set of output vectors
+			ndarray: n0 x len(times) set of output vectors
 		"""
 		if(self.ready()):
 			if(xs is None):
@@ -322,8 +325,8 @@ class cont:
 		"""Tests if the cont object is controllable.
 		
 		Returns:
-		    bool: Boolean, true if the cont configuration is controllable
-		    ndarray: Controllability grammian from Lyapunov equation
+			bool: Boolean, true if the cont configuration is controllable
+			ndarray: Controllability grammian from Lyapunov equation
 		"""
 		if (self.ready()):
 			if (self.B is not None):
@@ -390,13 +393,13 @@ class cont:
 		"""Save a set of state vectors.
 		
 		Args:
-		    filename (str): Name of file or filepath for save file
-		    times (array): Array of times of state vectors to be saved
-		    plot_points (int, optional): Number of points to save, defaults to self.plot_points
-		    xs (ndarray, optional): Existing set of state vectors to save
+			filename (str): Name of file or filepath for save file
+			times (array): Array of times of state vectors to be saved
+			plot_points (int, optional): Number of points to save, defaults to self.plot_points
+			xs (ndarray, optional): Existing set of state vectors to save
 		
 		Returns:
-		    cont: To allow for chaining
+			cont: To allow for chaining
 		"""
 		if(self.ready()):
 			if(plot_points is None):
@@ -416,13 +419,13 @@ class cont:
 		"""Save a set of output vectors
 		
 		Args:
-		    filename (str): Name of file or filebath for save file
-		    times (int): Array of times of output vectors to be saved
-		    plot_points (int, optional): Number of points to save, defaults to self.plot_points
-		    ys (ndarray, optional): Existing set of output vectors to save
+			filename (str): Name of file or filebath for save file
+			times (int): Array of times of output vectors to be saved
+			plot_points (int, optional): Number of points to save, defaults to self.plot_points
+			ys (ndarray, optional): Existing set of output vectors to save
 		
 		Returns:
-		    cont: To allow for chaining
+			cont: To allow for chaining
 		"""
 		if(self.ready()):
 			if(plot_points is None):
@@ -442,10 +445,10 @@ class cont:
 		"""Plot both states and outputs (if C is given) of a cont object for a given amount of time.
 		
 		Args:
-		    times (array): An array for the form [start time, end time]
-		    plot_points (int, optional): The number of points to use when plotting, default is the internal value, defaulted at 100
-		    filename (str, optional): Filename to save output to, does not save if none provided
-		    grid (bool, optional): Display grid, default is false
+			times (array): An array for the form [start time, end time]
+			plot_points (int, optional): The number of points to use when plotting, default is the internal value, defaulted at 100
+			filename (str, optional): Filename to save output to, does not save if none provided
+			grid (bool, optional): Display grid, default is false
 		
 		"""
 		if(self.ready()):
@@ -471,10 +474,10 @@ class cont:
 		"""Plot states of a cont object for a given amount of time.
 		
 		Args:
-		    times (array): An array for the form [start time, end time]
-		    plot_points (int, optional): The number of points to use when plotting, default is the internal value, defaulted at 100
-		    filename (str, optional): Filename to save output to, does not save if none provided
-		    grid (bool, optional): Display grid, default is false
+			times (array): An array for the form [start time, end time]
+			plot_points (int, optional): The number of points to use when plotting, default is the internal value, defaulted at 100
+			filename (str, optional): Filename to save output to, does not save if none provided
+			grid (bool, optional): Display grid, default is false
 		
 		"""
 		if(self.ready()):
@@ -492,10 +495,10 @@ class cont:
 		"""Plot outputs (if C is given) of a cont object for a given amount of time.
 		
 		Args:
-		    times (array): An array for the form [start time, end time]
-		    plot_points (int, optional): The number of points to use when plotting, default is the internal value, defaulted at 100
-		    filename (str, optional): Filename to save output to, does not save if none provided
-		    grid (bool, optional): Display grid, default is false
+			times (array): An array for the form [start time, end time]
+			plot_points (int, optional): The number of points to use when plotting, default is the internal value, defaulted at 100
+			filename (str, optional): Filename to save output to, does not save if none provided
+			grid (bool, optional): Display grid, default is false
 		
 		"""
 		if(self.ready()):
@@ -510,7 +513,15 @@ class cont:
 				self.save_output(filename,times,points,y)
 
 	def plot_impulse(self,times,inputs=None, outputs=None,plot_points=None,filename=None,grid=False):
-		"""Group by inputs, select arrays of inputs / outputs.
+		"""Plots output responses to input impulses grouped by input.
+
+		Args:
+			times (array): An array of the form [start time, end time]
+			inputs (array, optional): The inputs to plot, defaults to all inputs
+			outputs (array, optional): The outputs to plot, defaults to all outputs
+			plot_points (int, optional): The number of points to use when plotting, default is the internal value, defaulted at 100
+			filename (str, optional): Filename to save output to, does not save if none provided
+			grid (bool, optional): Display grid, default is false
 		"""
 		if(self.ready()):
 			if(self.B is not None and self.C is not None):
@@ -531,7 +542,15 @@ class cont:
 				print("Please set A, B and C.")
 
 	def plot_step(self,times,inputs=None, outputs=None,plot_points=None,filename=None,grid=False):
-		"""
+		"""Plots output responses to step inputs grouped by input.
+
+		Args:
+			times (array): An array of the form [start time, end time]
+			inputs (array, optional): The inputs to plot, defaults to all inputs
+			outputs (array, optional): The outputs to plot, defaults to all outputs
+			plot_points (int, optional): The number of points to use when plotting, default is the internal value, defaulted at 100
+			filename (str, optional): Filename to save output to, does not save if none provided
+			grid (bool, optional): Display grid, default is false
 		"""
 		if(self.ready()):
 			if(self.B is not None and self.C is not None):
@@ -552,20 +571,42 @@ class cont:
 			else:
 				print("Please set A, B and C.")
 
-
-	def LQR(self,R,Q,times=None,grid=False,plot_points=None):
-
-		return
-
-	def inf_lqr(self,R,Q,times=None,grid=False,plot_points=None):
+	def lqr(self,R,Q,Q_f,times=None,grid=False,plot_points=None):
+		"""
+		"""
 		if(self.ready()):
 			if(self.B is not None):
 				if(R is None):
 					R = 0.2*np.eye(np.shape(self.B)[1])+1e-6
 				if(Q is None):
 					Q = np.eye(np.shape(self.A)[0])
-				x = linalg.solve_continuous_are(self.A,self.B,Q,R)
-				K = -np.matmul(linalg.inv(R),np.matmul(self.B.T,x))
+
+		return
+
+	def inf_lqr(self,R,Q,times=None,grid=False,plot_points=None):
+		"""Computes the infinite horizon linear quadratic regulator given weighting matrices, R and Q. Can plot inputs and state.
+
+		Args:
+			R (ndarray): Input weighting matrix
+			Q (ndarray): State weighting matrix
+			times (array, optional): An array of the form [start time, end time], does not plot if not specified
+			plot_points (int, optional): The number of points to use when plotting, default is the internal value, defaulted at 100
+			grid (bool, optional): Display grid, default is false
+
+		Returns:
+			(tuple): tuple containing:
+				
+				- P (ndarray): Solution to the continuous algebraic Ricatti equation
+				- K (ndarray): The input matrix, u = Kx
+		"""
+		if(self.ready()):
+			if(self.B is not None):
+				if(R is None):
+					R = 0.2*np.eye(np.shape(self.B)[1])+1e-6
+				if(Q is None):
+					Q = np.eye(np.shape(self.A)[0])
+				P = linalg.solve_continuous_are(self.A,self.B,Q,R)
+				K = -np.matmul(linalg.inv(R),np.matmul(self.B.T,P))
 				if(times is not None):
 					if(plot_points is None):
 						plot_points = self.plot_points
@@ -576,7 +617,26 @@ class cont:
 					x = x[:,:,0].T
 					u = u[:,:,0].T
 					plot_sio(self,t,False,grid,x=x,u=u)
-				return (x,K)
+				return (P,K)
 			else:
 				print("Please set A, B and C using setABC.")
 
+	def plot_comp(self,length=0):
+		"""
+
+		"""
+		vals,vecs = linalg.eig(self.A)
+		d_ratios = -np.real(vals)/np.abs(vals)
+		pairs = sorted(zip(d_ratios,vecs.T),key = lambda x: x[0])
+		if(length ==2 or length ==4):
+			pairs = pairs[0:length]
+		elif(length==1):
+			pairs = np.array([pairs[0]])
+		else:
+			if (len(pairs)>=4):
+				pairs = pairs[0:4]
+			elif(len(pairs)>=2):
+				pairs = pairs[0:2]
+			else:
+				pairs = np.array([pairs[0]])
+		compass(pairs)

@@ -5,7 +5,8 @@ Network (:mod:`network`)
 =========================
 
 Examples
-########
+#########
+
 *:ref:`network_eg`
 
 Power Network Simulation
@@ -54,7 +55,7 @@ class network:
 		"""
 		toReturn = cont()
 		n = np.shape(self.Adj)[0]
-		lap = -gt.generate_laplacian(self.Adj)
+		lap = -generate_laplacian(self.Adj)
 		A = np.zeros((2*n,2*n))
 		B = np.zeros((2*n,n))
 		k_set = np.multiply(self.k,lap) #elementwise multiplication
@@ -79,7 +80,7 @@ class network:
 		"""
 		toReturn = disc()
 		n = np.shape(self.Adj)[0]
-		lap = -gt.generate_laplacian(self.Adj)
+		lap = -generate_laplacian(self.Adj)
 		A = np.zeros((2*n,2*n))
 		B = np.zeros((2*n,n))
 		k_set = np.multiply(self.k,lap) #elementwise multiplication
@@ -99,5 +100,5 @@ class network:
 	def show_network(self):
 		"""Summary
 		"""
-		gt.show_graph(self.Adj)
+		show_graph(self.Adj)
 		return self

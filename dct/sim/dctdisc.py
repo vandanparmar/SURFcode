@@ -37,7 +37,7 @@ Getting Values
 	disc.get_x
 	disc.get_y
 	disc.get_x_set
-	disc.get_y_set
+	disc.get_y_set	
 
 Plotting and Saving
 ********************
@@ -48,9 +48,13 @@ Plotting and Saving
 	disc.plot
 	disc.plot_state
 	disc.plot_output
+	disc.plot_impulse
+	disc.plot_step
+	disc.plot_comp
 	disc.save_state
 	disc.save_output
-
+	disc.lqr
+	disc.inf_lqr
 
 Simulation Properties
 **********************
@@ -77,18 +81,18 @@ class disc:
 
 	
 	Attributes:
-	    A (ndarray): Drift Matrix
-	    B (ndarray): Input Matrix
-	    C (ndarray): Output Matrix
-	    x0 (ndarray): Initial Conditions
+		A (ndarray): Drift Matrix
+		B (ndarray): Input Matrix
+		C (ndarray): Output Matrix
+		x0 (ndarray): Initial Conditions
 	"""
 	def __init__(self, n=None, no=None, nu=None):
 		"""Generate a disc object.
 		
 		Args:
-		    n (int, optional): Dimensions of n x n drift matrix, A
-		    no (int, optional): Dimension of n x no input matrix, B
-		    nu (int, optional): Dimensions of nu x n output matrix, C
+			n (int, optional): Dimensions of n x n drift matrix, A
+			no (int, optional): Dimension of n x no input matrix, B
+			nu (int, optional): Dimensions of nu x n output matrix, C
 		"""
 		if(n is None):
 			print('Initilising with empty matrices, please specify using "setABC".')
@@ -113,12 +117,12 @@ class disc:
 		"""Set A, B, C for matrices for a discrete simulation.
 		
 		Args:
-		    A (ndarray): Drift matrix
-		    B (ndarray, optional): Input matrix
-		    C (ndarray, optional): Output matrix
+			A (ndarray): Drift matrix
+			B (ndarray, optional): Input matrix
+			C (ndarray, optional): Output matrix
 		
 		Returns:
-		    disc: Updated disc object
+			disc: Updated disc object
 		"""
 		shapeA = np.shape(A)
 		if(shapeA[0] == shapeA[1]):
@@ -159,10 +163,10 @@ class disc:
 		"""Set drift matrix, A.
 		
 		Args:
-		    A (ndarray): n x n drift matrix, A
+			A (ndarray): n x n drift matrix, A
 		
 		Returns:
-		    disc: Updated simulate_cont object
+			disc: Updated simulate_cont object
 		"""
 		if(self.C  is not None):
 			if(np.shape(A)[0]==np.shape(self.C)[0]):
@@ -177,10 +181,10 @@ class disc:
 		"""Set input matrix, B.
 		
 		Args:
-		    B (ndarray): n x no input matrix, B
+			B (ndarray): n x no input matrix, B
 		
 		Returns:
-		    disc: Updated simulate_cont object
+			disc: Updated simulate_cont object
 		"""
 		n = np.shape(self.A)[0]
 		if(np.shape(B)[0]==n):
@@ -196,10 +200,10 @@ class disc:
 		"""Set output matrix, C.
 		
 		Args:
-		    C (ndarray): nu x n output matrix, C
+			C (ndarray): nu x n output matrix, C
 		
 		Returns:
-		    disc: Updated simulate_cont object
+			disc: Updated simulate_cont object
 		"""
 		n = np.shape(self.A)[0]
 		if(np.shape(C)[1]==n):
@@ -215,10 +219,10 @@ class disc:
 		"""Set intital conditions, x0.
 		
 		Args:
-		    x0 (ndarray): n x 1 initial conditions, x0
+			x0 (ndarray): n x 1 initial conditions, x0
 		
 		Returns:
-		    disc: Updated simulate_cont object
+			disc: Updated simulate_cont object
 		"""
 		if(np.shape(x0)==(np.shape(self.A)[0],1)):
 			self.x0 = x0
@@ -230,10 +234,10 @@ class disc:
 		"""Calculate a state vector at a particular time.
 		
 		Args:
-		    k (int): Index at which to return state vector
+			k (int): Index at which to return state vector
 		
 		Returns:
-		    ndarray: n x 1 state vector at index value k
+			ndarray: n x 1 state vector at index value k
 		"""
 		if(self.ready()):
 			x = np.matmul(np.linalg.matrix_power(self.A,k),self.x0)
@@ -243,10 +247,10 @@ class disc:
 		"""Calculate an output vector at a particular time.
 		
 		Args:
-		    k (int): Index at which to return output vector
+			k (int): Index at which to return output vector
 		
 		Returns:
-		    ndarray: no x 1 output vector at index k
+			ndarray: no x 1 output vector at index k
 		"""
 		if(self.ready()):
 			y = np.matmul(self.C,self.get_x(k))
@@ -256,10 +260,10 @@ class disc:
 		"""Calculate a set of x values.
 		
 		Args:
-		    ks (array): Array of indices at which to return state vectors
+			ks (array): Array of indices at which to return state vectors
 		
 		Returns:
-		    ndarray: n x len(ks) set of state vectors
+			ndarray: n x len(ks) set of state vectors
 		"""
 		if(self.ready()):
 			xs = self.get_x(ks[0])
@@ -273,11 +277,11 @@ class disc:
 		"""Calculate a set of y values.
 		
 		Args:
-		    ks (array): Array of times at which to return output vectors
-		    xs (ndarray, optional): Existing array of state vectors
+			ks (array): Array of times at which to return output vectors
+			xs (ndarray, optional): Existing array of state vectors
 		
 		Returns:
-		    ndarray: no x len(ks) set of output vectors
+			ndarray: no x len(ks) set of output vectors
 		"""
 		if(self.ready()):
 			if(xs is None):
@@ -312,8 +316,8 @@ class disc:
 		"""Tests if the disc object is controllable.
 		
 		Returns:
-		    bool: Boolean, true if the disc configuration is controllable
-		    ndarray: Controllability gramiam from discrete Lyapunov equation
+			bool: Boolean, true if the disc configuration is controllable
+			ndarray: Controllability gramiam from discrete Lyapunov equation
 		"""
 		if (self.ready()):
 			if (self.B is not None):
@@ -328,8 +332,8 @@ class disc:
 		"""Tests if the disc object is observable.
 		
 		Returns:
-		    bool: Boolean, true if the disc configuration is observable
-		    ndarray: Observability gramiam from discrete Lyapunov equation
+			bool: Boolean, true if the disc configuration is observable
+			ndarray: Observability gramiam from discrete Lyapunov equation
 		"""
 		if (self.ready()):
 			if (self.C is not None):
@@ -369,12 +373,12 @@ class disc:
 		"""Save a set of state vectors.
 		
 		Args:
-		    filename (str): Name of file or filepath for save file
-		    ks (array): Array of indices of state vectors to be saved
-		    xs (ndarray, optional): Existing set fo state vectors to save
+			filename (str): Name of file or filepath for save file
+			ks (array): Array of indices of state vectors to be saved
+			xs (ndarray, optional): Existing set fo state vectors to save
 		
 		Returns:
-		    disc: To allow for chaining
+			disc: To allow for chaining
 		"""
 		if(self.ready()):
 			eigvals = linalg.eigvals(self.A)
@@ -392,12 +396,12 @@ class disc:
 		"""Save a set of output vectors
 		
 		Args:
-		    filename (str): Name of file or filepath for save file
-		    ks (array): Array of indices of output vectors to be saved
-		    ys (ndarray, optional): Existing set of output vectors to save
+			filename (str): Name of file or filepath for save file
+			ks (array): Array of indices of output vectors to be saved
+			ys (ndarray, optional): Existing set of output vectors to save
 		
 		Returns:
-		    disc: To allow for chaining
+			disc: To allow for chaining
 		"""
 		if(self.ready()):
 			eigvals = linalg.eigvals(self.A)
@@ -415,9 +419,9 @@ class disc:
 		"""Plot both states and outputs (if C is given) of a disc object for a given set of indices.
 		
 		Args:
-		    ks (array): An array for the form [start index, end index]
-		    filename (str, optional): Filename to save output to, does not save if none provided
-		    grid (bool, optional): Display grid, default is false
+			ks (array): An array for the form [start index, end index]
+			filename (str, optional): Filename to save output to, does not save if none provided
+			grid (bool, optional): Display grid, default is false
 		
 		"""
 		if(self.ready()):
@@ -439,9 +443,9 @@ class disc:
 		"""Plot states of a disc object for a given set of indices.
 		
 		Args:
-		    ks (array): An array for the form [start index, end index]
-		    filename (str, optional): Filename to save output to, does not save if none provided
-		    grid (bool, optional): Display grid, default is false
+			ks (array): An array for the form [start index, end index]
+			filename (str, optional): Filename to save output to, does not save if none provided
+			grid (bool, optional): Display grid, default is false
 		
 		"""
 		if(self.ready()):
@@ -456,9 +460,9 @@ class disc:
 		"""Plot outputs (if C is given) of a disc object for a given set of indices.
 		
 		Args:
-		    ks (array): An array for the form [start index, end index]
-		    filename (str, optional): Filename to save output to, does not save if none provided
-		    grid (bool, optional): Display grid, default is false
+			ks (array): An array for the form [start index, end index]
+			filename (str, optional): Filename to save output to, does not save if none provided
+			grid (bool, optional): Display grid, default is false
 		
 		"""
 		if(self.ready()):
@@ -470,7 +474,14 @@ class disc:
 				self.save_state(filename,ks,y)
 
 	def plot_impulse(self,ks,inputs=None, outputs=None,filename=None,grid=False):
-		"""Group by inputs, select arrays of inputs / outputs.
+		"""Plots output responses to input impulses grouped by input.
+
+		Args:
+			ks (array): An array of the form [start index, end index]
+			inputs (array, optional): The inputs to plot, defaults to all inputs
+			outputs (array, optional): The outputs to plot, defaults to all outputs
+			filename (str, optional): Filename to save output to, does not save if none provided
+			grid (bool, optional): Display grid, default is false
 		"""
 		if(self.ready()):
 			if(self.B is not None and self.C is not None):
@@ -490,7 +501,14 @@ class disc:
 				print("Please set A, B and C.")
 
 	def plot_step(self,ks,inputs=None, outputs=None,filename=None,grid=False):
-		"""
+		"""Plots output responses to step inputs grouped by input.
+
+		Args:
+			ks (array): An array of the form [start index, end index]
+			inputs (array, optional): The inputs to plot, defaults to all inputs
+			outputs (array, optional): The outputs to plot, defaults to all outputs
+			filename (str, optional): Filename to save output to, does not save if none provided
+			grid (bool, optional): Display grid, default is false
 		"""
 		if(self.ready()):
 			if(self.B is not None and self.C is not None):
@@ -513,8 +531,22 @@ class disc:
 			else:
 				print("Please set A, B and C.")
 
+	def lqr(self,R,Q,Q_f,hor,ks=None,grid=False):
+		"""Computes the finite horizon linear quadratic regulator given weighting matrices, R, Q and Q_f. Can plot inputs and state.
 
-	def lqr(self,R,Q,Q_f,hor,ks=None,grid=None):
+		Args:
+			R (ndarray): Input weighting matrix
+			Q (ndarray): State weighting matrix
+			Q_f (ndarray): Final state weighting matrix
+			hor (int): Horizon index
+			ks (array, optional): An array of the form [start index, end index], does not plot if not specified
+			grid (bool, optional): Display grid, default is false
+
+		Returns:
+			(tuple): tuple containing:
+				- P (ndarray): Stack of matrices solving discrete Ricatti differential equation
+				- K (ndarray): Stack of input matrices, u[k] = K[k]x[k]
+		"""
 		if(self.ready()):
 			if(self.B is not None):
 				if(R is None):
@@ -550,12 +582,25 @@ class disc:
 								#print(K[i])
 								u = np.append(u,np.array([np.matmul(K[i],x[i])]),axis=0)
 							x = np.append(x,np.array([np.matmul(self.A,x[i])+np.matmul(self.B,u[i])]),axis=0)
-#						u = np.append(u,np.array([np.zeros((np.shape(self.B)[1],1))]),axis = 0)
 						k = np.arange(start,end+1)
 						plot_sio(self,k,True,grid,x=x[start:end+1,:,0].T,u=u[start:end+1,:,0].T)
 		return (P,K)
 
-	def inf_lqr(self,R,Q,ks=None,grid=None):
+	def inf_lqr(self,R,Q,ks=None,grid=False):
+		"""Computes the infinite horizon linear quadratic regulator given weighting matrices, R and Q. Can plot inputs and state.
+
+		Args:
+			R (ndarray): Input weighting matrix
+			Q (ndarray): State weighting matrix
+			ks (array, optional): An array of the form [start index, end index], does not plot if not specified
+			grid (bool, optional): Display grid, default is false
+
+		Returns:
+			(tuple): tuple containing:
+				
+				- P (ndarray): Solution to the continuous algebraic Ricatti equation
+				- K (ndarray): The input matrix, u = Kx
+		"""
 		if(self.ready()):
 			if(self.B is not None):
 				if(R is None):
@@ -576,3 +621,20 @@ class disc:
 					u = np.matmul(K,x)
 					plot_sio(self,k,True,grid,x=x,u=u)
 		return (P,K)
+
+	def plot_comp(self,length=0):
+		vals,vecs = linalg.eig(self.A)
+		d_ratios = -np.real(vals)/np.abs(vals)
+		pairs = sorted(zip(d_ratios,vecs.T),key = lambda x: x[0])
+		if(length ==2 or length ==4):
+			pairs = pairs[0:length]
+		elif(length==1):
+			pairs = np.array([pairs[0]])
+		else:
+			if (len(pairs)>=4):
+				pairs = pairs[0:4]
+			elif(len(pairs)>=2):
+				pairs = pairs[0:2]
+			else:
+				pairs = np.array([pairs[0]])
+		compass(pairs)
