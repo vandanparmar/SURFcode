@@ -1,0 +1,5 @@
+- move labels to 90 degrees
+- lqg control
+- output feedback
+- distributed / decentralized control
+- check with matlab (controllers)

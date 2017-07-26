@@ -65,7 +65,6 @@ def random_stable(n):
 		A[n-1,n-1] = -np.random.rand(1)[0]
 	return np.matmul(P,np.matmul(A,P.T))
 
-
 def random_unit(n):
 	"""Generate a random n x n matrix with spectral radius less than 1.
 	
@@ -169,9 +168,10 @@ def compass(pairs, arrowprops=None):
 				return "#00aa5e" #green
 			else:
 				return "#e62325" #red
-		[ax_i.annotate("", xy=(angle, radius), xytext=(0, 0), arrowprops=dict(arrowstyle='->',color=c(angle))) for angle, radius in zip(angles, radii)]
+		[ax_i.annotate(i+1, xy=(0,0), xytext=(thing[0],thing[1]), arrowprops=dict(arrowstyle='<-',color=c(thing[0]))) for i,thing in enumerate(zip(angles, radii))]
 		ax_i.set_ylim(0, np.max(radii))
 		plt.grid(color="#a6a5a6")
+#		ax_i.set_yticks([np.max(radii)/2,np.max(radii)])
 	fig.subplots_adjust(hspace=0.3)
 	plt.show()
 
