@@ -31,7 +31,7 @@ import matplotlib.pyplot as plt
 import json
 
 
-__all__ = ["generate_rand","generate_laplacian","generate_degree","generate_incidence","show_graph","save_to_file","load_from_file"]
+__all__ = ["generate_rand","generate_laplacian","generate_degree","generate_incidence","show_graph","save_to_file","load_from_file","chain"]
 
 #generate a random graph with a given number of nodes and probability for each edge.
 def generate_rand(n,p):
@@ -162,4 +162,26 @@ def load_from_numpy(filename):
 	    TYPE: Description
 	"""
 	toReturn = np.loadtxt(filename)
+	return toReturn
+
+
+def chain(n):
+	"""Generates a chain graph structure with n nodes.
+
+	Args:
+		n (int): Number of nodes
+
+	Returns:
+		ndarray: Adjacency matrix 
+	"""	
+	def p(i,j):
+		if(i==j):
+			return 1
+		elif(i==j+1):
+			return 1
+		elif(i==j-1):
+			return 1
+		else:
+			return 0
+	toReturn = [[p(i,j) for i in range(0,n)] for j in range(0,n)]
 	return toReturn

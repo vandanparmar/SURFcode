@@ -8,20 +8,20 @@ A network can be created and saved using the network creator. Alternatively,
 
 .. code-block:: python
 
-	>>> import DCT
-	>>> test_Adj = DCT.generate_rand(10,0.4)
+	>>> import dct
+	>>> test_Adj = dct.generate_rand(10,0.4)
 
 To import a network saved from the GUI,
 
 ::
 
-	>>> test_Adj_2 = DCT.load_from_file('test_graph.json')
+	>>> test_Adj_2 = dct.load_from_file('test_graph.json')
 
 A :ref:`network` object can then be created using this adjacency matrix,
 
 :: 
 
-	>>>  test_network = DCT.network(test_Adj_2)
+	>>>  test_network = dct.network(test_Adj_2)
 
 Which can then be turned into either a :ref:`continuous` object or a :ref:`discrete` object,
 

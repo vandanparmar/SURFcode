@@ -7,26 +7,26 @@ sys.path.append(
 import dct
 from scipy import linalg
 import numpy as np
-n_a = 9
-n_b = 7
-n_c = 5
-test_1 = dct.cont(n_a,no=n_c,nu=n_b)
-print(test_1.is_stable())
-print(test_1.is_controllable())
-#test_1.plot_comp(2)
-# A = np.array([[-1,0],[0,-1]])
-# B = np.array([[1,0],[1,1],[1,0],[1,0]]).T
-# C = np.array([[1,0],[0,1]])
-# #test_1.setC(C)
-# #test_1.setABC(A,C=C,B=B)
-# print(test_1.A)
-# print("A eigvals")
-# print(linalg.eigvals(test_1.A))
-# print(test_1.B)
-# print(test_1.C)
-# test_1.lqr(R=np.eye(n_b),Q = np.matmul(test_1.C.T,test_1.C),Q_f = np.eye(n_a)*1e6, hor = 10, ks=[1,10],grid=True)
-test_1.inf_lqr(R=np.eye(n_b),Q = np.matmul(test_1.C.T,test_1.C),times=[1,10],grid=True)
-#print(test_1.impulse(5))
+# n_a = 9
+# n_b = 7
+# n_c = 5
+# test_1 = dct.disc(n_a,no=n_c,nu=n_b)
+# print(test_1.is_stable())
+# print(test_1.is_controllable())
+# #test_1.plot_comp(2)
+# # A = np.array([[-1,0],[0,-1]])
+# # B = np.array([[1,0],[1,1],[1,0],[1,0]]).T
+# # C = np.array([[1,0],[0,1]])
+# # #test_1.setC(C)
+# # #test_1.setABC(A,C=C,B=B)
+# # print(test_1.A)
+# # print("A eigvals")
+# # print(linalg.eigvals(test_1.A))
+# # print(test_1.B)
+# # print(test_1.C)
+# # test_1.lqr(R=np.eye(n_b),Q = np.matmul(test_1.C.T,test_1.C),Q_f = np.eye(n_a)*1e6, hor = 10, ks=[1,10],grid=True)
+# test_1.inf_lqr(R=np.eye(n_b),Q = np.matmul(test_1.C.T,test_1.C),ks=[1,10],grid=True)
+# # print(test_1.impulse(5))
 
 # print(linalg.det(np.matmul(B,B.conj().T)))
 # print(linalg.eigvals(np.matmul(C,C.conj().T)))
@@ -75,3 +75,26 @@ test_1.inf_lqr(R=np.eye(n_b),Q = np.matmul(test_1.C.T,test_1.C),times=[1,10],gri
 
 # p_cont.plot([0,50])
 # p_disc.plot([0,50])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+A = np.array([[0,1],[-5,-2]])
+B = np.array([[0,5],[3,2]])
+C = np.array([[1,0],[0,1]])
+Q = np.array([[1.,0],[0,1]])
+R = np.array([[1,0],[0,1.1]])
+test_cont = dct.disc().setABC(A,B=B,C=C)
+print(test_cont.inf_lqr(R,Q))

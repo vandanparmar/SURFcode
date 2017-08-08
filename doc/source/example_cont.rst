@@ -3,31 +3,31 @@
 Continuous Example
 ==================
 
-First step is to import DCT,
+First step is to import dct,
 
 .. code-block:: python
 
-	>>> import DCT
+	>>> import dct
 
 A :ref:`continuous` object can then be created,
 
 ::
 	
-	>>> example_cont = DCT.cont()
+	>>> example_cont = dct.cont()
 	"Initialised with empty matrices, please specify using "setABC"."
 
 The warning message appears because the continous simulation object currently has no associated internal matrices. These can be set using `setABC()` or the object can be initialised by specifying the dimensions,
 
 ::
 
-	>>> example_cont_2 = DCT.cont(6,no=4,nu=3)
+	>>> example_cont_2 = dct.cont(6,no=4,nu=3)
 
 This defines a system with state vector of dimension 6, 3 inputs and 4 outputs. The A matrix is random and stable, B and C are just random. Another random matrix, or a specified matrix can be set instead,
 
 ::
 
-	>>> example_cont_2.setA(DCT.random_stable(6))
-	>>> example_cont_2.setB(DCT.random(6,3))
+	>>> example_cont_2.setA(dct.random_stable(6))
+	>>> example_cont_2.setB(dct.random(6,3))
 	
 
 We can then verify the stability of the new A matrix,

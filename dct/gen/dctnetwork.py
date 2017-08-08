@@ -24,6 +24,8 @@ import numpy as np
 from dct.sim import *
 from dct.tools import *
 
+
+
 class network:
 	"""Class for representing power networks and generating discrete and continuous simulations of power networks.
 	

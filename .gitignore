@@ -5,3 +5,7 @@ graph-creator.css
 /James_test/*
 /doc/build/*
 /dct/__pycache__/*
+/dct/gen/__pycache__/*
+/dct/sim/__pycache__/*
+/dct/tools/__pycache__/*
+
