@@ -76,8 +76,8 @@ for t in range(1,T-1):
 constr += [R[T-1]==np.zeros((n,n))]
 prob = Problem(Minimize(cost),constr)
 a = prob.solve()
-print(a)
-print(R.value)
+print a 
+print R.value
 # phi = Variable(n+nu,nu)
 
 # C1 = sim.C
