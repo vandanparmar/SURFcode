@@ -629,14 +629,14 @@ class cont:
 		d_ratios = -np.real(vals)/np.abs(vals)
 		pairs = sorted(zip(d_ratios,vecs.T),key = lambda x: x[0])
 		if(length ==2 or length ==4):
-			pairs = pairs[0:length]
+			pairs = pairs[::2][0:length]
 		elif(length==1):
 			pairs = np.array([pairs[0]])
 		else:
 			if (len(pairs)>=4):
-				pairs = pairs[0:4]
+				pairs = pairs[::2][0:4]
 			elif(len(pairs)>=2):
-				pairs = pairs[0:2]
+				pairs = pairs[::2][0:2]
 			else:
 				pairs = np.array([pairs[0]])
 		compass(pairs)

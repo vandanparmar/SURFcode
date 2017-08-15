@@ -59,7 +59,7 @@ def generate_laplacian(adjacency_matrix):
 	"""
 	G = nx.from_numpy_matrix(adjacency_matrix)
 	toReturn = nx.laplacian_matrix(G)
-	return toReturn.toarray()
+	return toReturn
 
 def generate_degree(adjacency_matrix):
 	"""Summary
@@ -184,4 +184,4 @@ def chain(n):
 		else:
 			return 0
 	toReturn = [[p(i,j) for i in range(0,n)] for j in range(0,n)]
-	return toReturn
+	return np.array(toReturn)
