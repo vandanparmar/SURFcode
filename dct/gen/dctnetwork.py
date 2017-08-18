@@ -92,7 +92,7 @@ class network:
 		d_m_set += eye_n
 		A[::2,::2] = eye_n
 		A[1::2,::2] = k_set
-		A[::2,1::2] = self.dt
+		A[::2,1::2] = eye_n*self.dt
 		A[1::2,1::2] = d_m_set
 		B[1::2,:] = eye_n
 		C = np.transpose(B)

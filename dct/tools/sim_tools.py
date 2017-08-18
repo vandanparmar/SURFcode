@@ -23,9 +23,9 @@ Functions to generate types of matrix for simulations.
 import numpy as np
 from scipy import linalg,stats
 import matplotlib.pyplot as plt
+from matplotlib import colors,cm
 
-
-__all__ = ["random_mat","random_stable","random_unit","plot_sio","plot_resp","compass"]
+__all__ = ["random_mat","random_stable","random_unit","plot_sio","plot_resp","compass","marg_stab","binify","plot_hmap"]
 
 def random_mat(a,b):
 	"""Generate a random a x b matrix.
@@ -137,6 +137,16 @@ def plot_resp(self,times,inputs,outputs,disc,grid,resp,type_i):
 	plt.subplots_adjust(hspace=0.5)
 	plt.show()
 
+def plot_hmap(self,times,vals,title,xlabel,vmin=1e-7):
+	my_cmap = cm.get_cmap('BuPu')
+	my_cmap.set_bad((0.9686275,0.9882359411,0.9921568627))
+	plt.title(title)
+	plt.xlabel(xlabel)
+	plt.pcolor(np.absolute(vals), norm=colors.LogNorm(), cmap=my_cmap,vmin=vmin)
+	plt.colorbar()
+	plt.show()
+
+
 
 def compass(pairs, arrowprops=None):
 	if (len(pairs)==4):
@@ -173,3 +183,30 @@ def compass(pairs, arrowprops=None):
 		plt.grid(color="#a6a5a6")
 		ax_i.set_rlabel_position(270)
 	plt.show()
+
+def marg_stab(n):
+	"""Generates a chain graph structure with n nodes.
+
+	Args:
+		n (int): Number of nodes
+
+	Returns:
+		ndarray: Adjacency matrix 
+	"""	
+	def p(i,j):
+		if(i==j):
+			return 0.6
+		elif(i==j+1):
+			return 0.2
+		elif(i==j-1):
+			return 0.2
+		else:
+			return 0
+	toReturn = [[p(i,j) for i in range(0,n)] for j in range(0,n)]
+	toReturn[0][0] = 0.8
+	toReturn[n-1][n-1] = 0.8
+	return np.array(toReturn)
+
+def binify(A):
+	toReturn = np.array((A!=0.0))
+	return toReturn

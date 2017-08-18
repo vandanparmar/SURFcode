@@ -7,10 +7,43 @@ sys.path.append(
 import dct
 from scipy import linalg
 import numpy as np
-n_a = 20
-n_b = 3
-n_c = 3
-test_1 = dct.disc(n_a,no=n_c,nu=n_b)
+
+
+n = 10
+no = 4
+nu = n
+T = 7
+
+d=3
+
+
+# uns = np.array([[0.448,-0.971,0,0,0],[-0.396,-0.2425,0.6040,0,0],[0,0.8397,-0.1613,0.1466,0],[0,0,0.2864,-0.2316,-0.83339],[0,0,0,0.35447,-0.2251]])
+network = dct.network(dct.chain(n))
+sim = network.generate_disc_sim()
+# sim = dct.disc(n,no=no,nu=nu)
+# sim.A = uns
+# sim.A = dct.marg_stab(n)
+sim.A /= 10
+#sim.B = np.eye(nu)
+sim.C1 = np.eye(2*n)
+sim.D12 = np.eye(nu)
+
+# print(sim.A)
+# print(sim.B)
+# print(sim.C)
+print(sim.is_stable())
+x0 = np.zeros((2*n,1))
+#x0[15] = 1.0
+#x0[14] = 1.0
+x0[9] = 1.0
+#x0[20] = 5.0
+#x0[27] = 1.0
+sim.setx0(x0)
+
+
+#sim.h2(T,C1=sim.C1,D12=sim.D12,ks=[0,20],heatmap=True)
+[R,M] = sim.sls_slow(T,2,C1=sim.C1,D12=sim.D12,ks=[0,20],heatmap=True,)
+#print(R,M)
 # print(test_1.is_stable())
 # print(test_1.is_controllable())
 # test_1.plot_comp(2)
@@ -26,7 +59,7 @@ test_1 = dct.disc(n_a,no=n_c,nu=n_b)
 # # # print(test_1.C)
 # # # test_1.lqr(R=np.eye(n_b),Q = np.matmul(test_1.C.T,test_1.C),Q_f = np.eye(n_a)*1e6, hor = 10, ks=[1,10],grid=True)
 # test_1.inf_lqr(R=np.eye(n_b),Q = np.matmul(test_1.C.T,test_1.C),times=[0,10],grid=True)
-test_1.plot_impulse([0,10],grid=True)
+# test_1.plot_impulse([0,10],grid=True)
 # # # print(test_1.impulse(5))
 
 # print(linalg.det(np.matmul(B,B.conj().T)))

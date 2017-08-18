@@ -7,58 +7,97 @@ from matplotlib import pyplot as plt
 import numpy as np
 import dct
 from cvxpy import *
+from matplotlib import colors,cm
 
-n = 6
+def mar_stab(n):
+	"""Generates a chain graph structure with n nodes.
+
+	Args:
+		n (int): Number of nodes
+
+	Returns:
+		ndarray: Adjacency matrix 
+	"""	
+	def p(i,j):
+		if(i==j):
+			return 0.6
+		elif(i==j+1):
+			return 0.2
+		elif(i==j-1):
+			return 0.2
+		else:
+			return 0
+	toReturn = [[p(i,j) for i in range(0,n)] for j in range(0,n)]
+	return np.array(toReturn)
+
+def binify(A):
+	toReturn = np.array((A!=0.0))
+	return toReturn
+
+
+n = 4
 no = 4
-nu = 3
-T = 10
-R_struc = 1-dct.chain(n)
-M_struc = 1-dct.chain(n)
-M_struc = M_struc[:nu,:]
-print(R_struc)
-# network = dct.network(dct.chain(no))
+nu = n
+T = 5
+
+d=3
+
+# uns = np.array([[0.448,-0.971,0,0,0],[-0.396,-0.2425,0.6040,0,0],[0,0.8397,-0.1613,0.1466,0],[0,0,0.2864,-0.2316,-0.83339],[0,0,0,0.35447,-0.2251]])
 sim = dct.disc(n,no=no,nu=nu)
-sim.A = np.multiply(sim.A,dct.chain(n))
+# sim.A = uns
+A = mar_stab(n)
+sim.A = A
+# sim.A = np.multiply(sim.A,dct.chain(n))
+sim.B = np.eye(nu)
+sim.C1 = np.eye(n)
+sim.D12 = np.eye(nu)
+
 #sim.B = np.multiply(sim.B,(1-M_struc).T)
-print(sim.A)
-print(sim.is_stable())
-print(sim.is_controllable())
-print(sim.is_observable())
-# sim = dct.disc(n=n,no=no,nu=nu)
-# sim.setA(dct.chain(n))
-# print(np.shape(sim.B))
-# sim.setB(np.eye(nu))
-# sim.setC(np.eye(no))
-uns = np.array([[0.448,-0.971,0,0,0],[-0.396,-0.2425,0.6040,0,0],[0,0.8397,-0.1613,0.1466,0],[0,0,0.2864,-0.2316,-0.83339],[0,0,0,0.35447,-0.2251]])
 
+# R = np.array([Variable(n, n) for t in range(0,T)])
+# M = np.array([Variable(nu,n) for t in range(0,T)])
 
+R_struc = [np.linalg.matrix_power(binify(sim.A),d-1).tolist() for t in range(0,T)]
+M_struc = [binify(np.matmul(sim.B.T,np.array(R_struc[t]))).tolist() for t in range(0,T)]
 
-R = [Variable(n, n) for t in range(0,T)]
-M = [Variable(nu,n) for t in range(0,T)]
+R = list(map(lambda i: bmat(list(map(lambda j: list(map(lambda k: Variable() if k else 0, j)), i))),R_struc))
+M = list(map(lambda i: bmat(list(map(lambda j: list(map(lambda k: Variable() if k else 0, j)), i))),M_struc))
+
+def p(i):
+	if(i==1):
+		return 0
+	else:
+		return Variable()
+
 
 def H2(R,M,C,D,T):
 	toReturn = 0
 	for t in range(0,T):
-		this = norm(C*R[t]+D*M[t],"fro")
-		toReturn += this
+		toReturn += norm(C*R[t],"fro")
+		toReturn += norm(D*M[t])
 	return toReturn
 
-cost = H2(R,M,sim.C,np.random.rand(no,nu),T)
+
+cost = H2(R,M,sim.C1,sim.D12,T)
 constr = [R[0]==np.eye(n)]
 for t in range(0,T-1):
-	# constr += [mul_elemwise(R_struc,R[t])==0]
-	# constr += [mul_elemwise(M_struc,M[t])==0]
 	constr += [R[t+1] == sim.A*R[t]+sim.B*M[t]]
 constr += [R[T-1]==0]
 prob = Problem(Minimize(cost),constr)
+#a = prob.solve(solver=SCS,eps = 1e-10)
 a = prob.solve()
 print(a)
 R = np.array(list(map(lambda x: x.value,R)))
 M = np.array(list(map(lambda x: x.value,M))) 
-
 t_plot = 20
 
-sim.setx0(np.array([[0,1,0,0,0,0]]).T)
+x0 = np.zeros((n,1))
+#x0[15] = 1.0
+x0[15] = 1.0
+x0[2] = 10.0
+x0[21] = 5.0
+#x0[27] = 1.0
+sim.setx0(x0)
 x = sim.x0
 delta_x = np.zeros((n,T))
 xhat = np.zeros((n,1))
@@ -75,11 +114,27 @@ for t in range(0,t_plot-1):
 	u = np.append(u,np.zeros((nu,1)),axis=1)
 	xhat = np.append(xhat,np.zeros((n,1)),axis=1)
 
+my_cmap = cm.get_cmap('BuPu')
+my_cmap.set_bad((0.9686275,0.9882359411,0.9921568627))
 
+vmin = 1e-7
 times = np.arange(0,t_plot)
-plt.pcolor(np.absolute(x), cmap="BuPu")
+x_free = sim.get_x_set(times)
+plt.title("State Uncontrolled")
+plt.pcolor(np.absolute(x_free), norm=colors.LogNorm(), cmap=my_cmap,vmin=vmin)
+plt.colorbar()
 plt.show()
 
-sim.get_x_set([0,t_plot])
-dct.plot_sio(sim,times,True,True,x=x,u=u)
-dct.plot_sio(sim,times,True,True,x=sim.get_x_set(times))
+plt.title("State Controlled")
+plt.pcolor(np.absolute(x), norm=colors.LogNorm(), cmap=my_cmap,vmin=vmin)
+plt.colorbar()
+plt.show()
+
+plt.pcolor(np.absolute(u),norm=colors.LogNorm(),cmap=my_cmap,vmin=vmin)
+plt.title("Input")
+plt.colorbar()
+plt.show()
+
+
+# dct.plot_sio(sim,times,True,True,x=x,u=u)
+# dct.plot_sio(sim,times,True,True,x=x_free)

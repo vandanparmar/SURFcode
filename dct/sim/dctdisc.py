@@ -69,6 +69,7 @@ Simulation Properties
 import numpy as np
 from scipy import linalg
 from dct.tools import *
+import cvxpy
 
 
 class disc:
@@ -638,3 +639,106 @@ class disc:
 			else:
 				pairs = np.array([pairs[0]])
 		compass(pairs)
+
+
+	def h2(self,hor,C1=None,D12=None,ks=None,heatmap=False,grid=False):
+		if(self.ready()):
+			if(self.B is not None):
+				if(C1 is None):
+					C1 = np.eye(np.shape(self.A)[0])
+				if(D12 is None):
+					D12 = np.eye(np.shape(self.B)[1])
+				[n,nu] = np.shape(self.B)
+				R = np.array([cvxpy.Variable(n, n) for t in range(0,hor)])
+				M = np.array([cvxpy.Variable(nu,n) for t in range(0,hor)])
+				def H2_norm(R,M,C,D,T):
+					toReturn = 0
+					for t in range(0,T):
+						toReturn += cvxpy.norm(C*R[t],"fro")
+						toReturn += cvxpy.norm(D*M[t])
+					return toReturn
+				cost = H2_norm(R,M,C1,D12,hor)
+				constr = [R[0]==np.eye(n)]
+				for t in range(0,hor-1):
+					constr += [R[t+1] == self.A*R[t]+self.B*M[t]]
+				constr += [R[hor-1]==0]
+				prob = cvxpy.Problem(cvxpy.Minimize(cost),constr)
+				a = prob.solve()
+				print('Minimized value: '+str(a))
+				R = np.array(list(map(lambda x: x.value,R)))
+				M = np.array(list(map(lambda x: x.value,M))) 
+				if(ks is not None):
+					times = np.arange(0,ks[1]+1)
+					x,u = self.get_x_u_sls(R,M,hor,times)
+					if(heatmap):
+						plot_hmap(self,times,x,"State","k")
+						plot_hmap(self,times,u,"Input","k")
+					else:
+						times = np.arange(0,ks[1]+1)
+						plot_sio(self,times,True,grid,x=x,u=u)
+				return [R,M]
+
+
+	def get_x_u_sls(self,R,M,T,ks,w=None):
+		[n,nu] = np.shape(self.B)
+		if (w is None):
+			w = np.zeros((n,))
+			# w = np.matmul(sim.B,np.random.normal(0,0.1,nu))
+		x = self.x0
+		delta_x = np.zeros((n,T))
+		xhat = np.zeros((n,1))
+		u = np.zeros((nu,1))
+		for k_i in ks:
+			delta_x = np.append(delta_x,np.array([x[:,k_i]-xhat[:,k_i]]).T,axis=1)
+			for i in range(0,T):
+				u[:,k_i]+= np.matmul(M[i],delta_x[:,k_i-i+T])
+				xhat[:,k_i] += np.matmul(R[i],delta_x[:,k_i-i+T])
+			x_plus1 = np.array([np.matmul(self.A,x[:,-1])+np.matmul(self.B,u[:,-1])+w]).T
+			x = np.append(x,x_plus1,axis=1)
+			u = np.append(u,np.zeros((nu,1)),axis=1)
+			xhat = np.append(xhat,np.zeros((n,1)),axis=1)
+		return [x,u]
+
+
+
+
+	def sls_slow(self,hor,d,C1=None,D12=None,ks=None,heatmap=False,grid=False):
+		if(self.ready()):
+			if(self.B is not None):
+				if(C1 is None):
+					C1 = np.eye(np.shape(self.A)[0])
+				if(D12 is None):
+					D12 = np.eye(np.shape(self.B)[1])
+				[n,nu] = np.shape(self.B)
+				R_struc = [np.linalg.matrix_power(binify(self.A),d-1).tolist() for t in range(0,hor)]
+				M_struc = [binify(np.matmul(self.B.T,np.array(R_struc[t]))).tolist() for t in range(0,hor)]
+				R = list(map(lambda i: cvxpy.bmat(list(map(lambda j: list(map(lambda k: cvxpy.Variable() if k else 0, j)), i))),R_struc))
+				M = list(map(lambda i: cvxpy.bmat(list(map(lambda j: list(map(lambda k: cvxpy.Variable() if k else 0, j)), i))),M_struc))
+				def H2_norm(R,M,C,D,T):
+					toReturn = 0
+					for t in range(0,T):
+						toReturn += cvxpy.norm(C*R[t],"fro")
+						toReturn += cvxpy.norm(D*M[t])
+					return toReturn
+				cost = H2_norm(R,M,C1,D12,hor)
+				constr = [R[0]==np.eye(n)]
+				for t in range(0,hor-1):
+					constr += [R[t+1] == self.A*R[t]+self.B*M[t]]
+				constr += [R[hor-1]==0]
+				prob = cvxpy.Problem(cvxpy.Minimize(cost),constr)
+				a = prob.solve(solver=cvxpy.SCS,eps=1e-10)
+				print('Minimized value: '+str(a))
+				R = np.array(list(map(lambda x: x.value,R)))
+				M = np.array(list(map(lambda x: x.value,M))) 
+				if(ks is not None):
+					times = np.arange(0,ks[1])
+					x,u = self.get_x_u_sls(R,M,hor,times)
+					if(heatmap):
+						plot_hmap(self,times,x,"State","k")
+						plot_hmap(self,times,u,"Input","k")
+					else:
+						times = np.arange(0,ks[1]+1)
+						plot_sio(self,times,True,grid,x=x,u=u)
+				return [R,M]
+
+
