@@ -20,9 +20,12 @@ d=3
 # uns = np.array([[0.448,-0.971,0,0,0],[-0.396,-0.2425,0.6040,0,0],[0,0.8397,-0.1613,0.1466,0],[0,0,0.2864,-0.2316,-0.83339],[0,0,0,0.35447,-0.2251]])
 network = dct.network(dct.chain(n))
 sim = network.generate_disc_sim()
+print(sim.is_controllable())
 # sim = dct.disc(n,no=no,nu=nu)
 # sim.A = uns
 # sim.A = dct.marg_stab(n)
+
+# sim.A /= (np.max(np.abs(linalg.eigvals(sim.A)))+0.01)
 sim.A /= 10
 #sim.B = np.eye(nu)
 sim.C1 = np.eye(2*n)
@@ -39,10 +42,13 @@ x0[9] = 1.0
 #x0[20] = 5.0
 #x0[27] = 1.0
 sim.setx0(x0)
+k = np.arange(0,21)
 
+dct.plot_hmap(sim,k,sim.get_x_set(k),"Uncontrolled Power Network","k")
+sim.h2(T,C1=sim.C1,D12=sim.D12,ks=[0,20],heatmap=True)
+x = sim.sls_slow(T,d,C1=sim.C1,D12=sim.D12,ks=[0,20],heatmap=True)
+# print(x)
 
-#sim.h2(T,C1=sim.C1,D12=sim.D12,ks=[0,20],heatmap=True)
-[R,M] = sim.sls_slow(T,2,C1=sim.C1,D12=sim.D12,ks=[0,20],heatmap=True,)
 #print(R,M)
 # print(test_1.is_stable())
 # print(test_1.is_controllable())
@@ -89,11 +95,16 @@ sim.setx0(x0)
 # test.setA(A).setC(C)
 # test.plot([1,10],grid=True)
 
-#pn = dct.network(dct.load_from_file("test/test_graph_1.json"))
-#p_cont = pn.generate_disc_sim()
-#print(p_cont.is_controllable())
-#p_cont.plot_comp()
-# p_cont = dct.disc(3,2,3)
+# n = 5
+# no = 2
+# nu = 3
+
+
+# pn = dct.network(dct.load_from_file("test/test_graph_1.json"))
+# p_cont = pn.generate_disc_sim()
+# print(p_cont.is_controllable())
+# p_cont.plot_comp()
+# p_cont = dct.disc(n = n	,no=no,nu=nu)
 # pn.show_network()
 # print(np.shape(p_cont.A))
 # print(np.shape(p_cont.B))
@@ -104,8 +115,8 @@ sim.setx0(x0)
 # co,w_c = p_cont.is_controllable()
 # print(co,linalg.eigvals(w_c))
 # p_cont.plot_impulse([0,15],grid=True)
-#R = np.eye(5)+0.1*dct.random_mat(5,5)
-#p_cont.inf_lqr(R,np.matmul(p_cont.C.T,p_cont.C),ks=[0,20],grid=True)
+# R = np.eye(5)+0.1*dct.random_mat(5,5)
+# p_cont.inf_lqr(None,None,ks=[0,20],grid=True)
 
 # p_cont.plot([0,50])
 # p_disc.plot([0,50])

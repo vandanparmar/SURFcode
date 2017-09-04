@@ -25,7 +25,7 @@ from scipy import linalg,stats
 import matplotlib.pyplot as plt
 from matplotlib import colors,cm
 
-__all__ = ["random_mat","random_stable","random_unit","plot_sio","plot_resp","compass","marg_stab","binify","plot_hmap"]
+__all__ = ["random_mat","random_stable","random_unit","plot_sio","plot_resp","compass","marg_stab","plot_hmap"]
 
 def random_mat(a,b):
 	"""Generate a random a x b matrix.
@@ -137,7 +137,7 @@ def plot_resp(self,times,inputs,outputs,disc,grid,resp,type_i):
 	plt.subplots_adjust(hspace=0.5)
 	plt.show()
 
-def plot_hmap(self,times,vals,title,xlabel,vmin=1e-7):
+def plot_hmap(self,times,vals,title,xlabel,vmin=1e-10):
 	my_cmap = cm.get_cmap('BuPu')
 	my_cmap.set_bad((0.9686275,0.9882359411,0.9921568627))
 	plt.title(title)
@@ -207,6 +207,3 @@ def marg_stab(n):
 	toReturn[n-1][n-1] = 0.8
 	return np.array(toReturn)
 
-def binify(A):
-	toReturn = np.array((A!=0.0))
-	return toReturn

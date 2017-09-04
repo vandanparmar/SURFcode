@@ -70,7 +70,9 @@ import numpy as np
 from scipy import linalg
 from dct.tools import *
 import cvxpy
-
+import multiprocessing as mp
+from itertools import repeat
+import time
 
 class disc:
 	"""Class to contain objects and functions for carrying out discrete simulations of the form,
@@ -607,7 +609,7 @@ class disc:
 				if(R is None):
 					R = 0.2*np.eye(np.shape(self.B)[1])+1e-6
 				if(Q is None):
-					Q = np.eye(np.selfhape(self.A)[0])
+					Q = np.eye(np.shape(self.A)[0])
 				P = linalg.solve_discrete_are(self.A,self.B,Q,R)
 				K = -np.matmul(linalg.inv(R+np.matmul(self.B.T,np.matmul(P,self.B))),np.matmul(self.B.T,np.matmul(P,self.A)))
 				if (ks is not None):
@@ -621,6 +623,7 @@ class disc:
 						x = np.append(x,x0_p,axis=1)
 					u = np.matmul(K,x)
 					plot_sio(self,k,True,grid,x=x,u=u)
+					plot_hmap(self,k,x,"LQR State","k")
 		return (P,K)
 
 	def plot_comp(self,length=0):
@@ -655,7 +658,7 @@ class disc:
 					toReturn = 0
 					for t in range(0,T):
 						toReturn += cvxpy.norm(C*R[t],"fro")
-						toReturn += cvxpy.norm(D*M[t])
+						toReturn += cvxpy.norm(D*M[t],"fro")
 					return toReturn
 				cost = H2_norm(R,M,C1,D12,hor)
 				constr = [R[0]==np.eye(n)]
@@ -663,7 +666,9 @@ class disc:
 					constr += [R[t+1] == self.A*R[t]+self.B*M[t]]
 				constr += [R[hor-1]==0]
 				prob = cvxpy.Problem(cvxpy.Minimize(cost),constr)
+				t0 = time.time()
 				a = prob.solve()
+				t1 = time.time()
 				print('Minimized value: '+str(a))
 				R = np.array(list(map(lambda x: x.value,R)))
 				M = np.array(list(map(lambda x: x.value,M))) 
@@ -676,7 +681,7 @@ class disc:
 					else:
 						times = np.arange(0,ks[1]+1)
 						plot_sio(self,times,True,grid,x=x,u=u)
-				return [R,M]
+				return [R,M,t1-t0]
 
 
 	def get_x_u_sls(self,R,M,T,ks,w=None):
@@ -718,15 +723,18 @@ class disc:
 					toReturn = 0
 					for t in range(0,T):
 						toReturn += cvxpy.norm(C*R[t],"fro")
-						toReturn += cvxpy.norm(D*M[t])
+						toReturn += cvxpy.norm(D*M[t],"fro")
 					return toReturn
 				cost = H2_norm(R,M,C1,D12,hor)
+				#print(cost)
 				constr = [R[0]==np.eye(n)]
 				for t in range(0,hor-1):
 					constr += [R[t+1] == self.A*R[t]+self.B*M[t]]
 				constr += [R[hor-1]==0]
 				prob = cvxpy.Problem(cvxpy.Minimize(cost),constr)
+				t0 = time.time()
 				a = prob.solve(solver=cvxpy.SCS,eps=1e-10)
+				t1 = time.time()
 				print('Minimized value: '+str(a))
 				R = np.array(list(map(lambda x: x.value,R)))
 				M = np.array(list(map(lambda x: x.value,M))) 
@@ -742,3 +750,167 @@ class disc:
 				return [R,M]
 
 
+	def sls(self,hor,d,C1=None,D12=None,ks=None,heatmap=False,grid=False):
+		if(self.ready()):
+			if(self.B is not None):
+				if(C1 is None):
+					C1 = np.eye(np.shape(self.A)[0])
+				if(D12 is None):
+					D12 = np.eye(np.shape(self.B)[1])
+				[n,nu] = np.shape(self.B)
+				R_struc = [np.linalg.matrix_power(binify(self.A),d-1) for t in range(0,hor)]
+				M_struc = [binify(np.matmul(self.B.T,np.array(R_struc[t]))) for t in range(0,hor)]
+				R_struc = np.swapaxes(np.array(R_struc),0,2)
+				M_struc = np.swapaxes(np.array(M_struc),0,2)
+				R_struc = np.swapaxes(R_struc,1,2).tolist()
+				M_struc = np.swapaxes(M_struc,1,2).tolist()
+				R = list(map(lambda i: (list(map(lambda j: cvxpy.vstack(list(map(lambda k: cvxpy.Variable() if k else 0, j))), i))),R_struc))
+				M = list(map(lambda i: (list(map(lambda j: cvxpy.vstack(list(map(lambda k: cvxpy.Variable() if k else 0, j))), i))),M_struc))
+				pool = mp.Pool(processes=mp.cpu_count())
+				args_list = zip(repeat(self.A),repeat(self.B),R,M,repeat(C1),repeat(D12),repeat(hor),np.eye(n))
+				t0 = time.time()
+				res = pool.starmap(eval_i,args_list)
+				t1 = time.time()
+				[R,M] = list(zip(*res))
+				R = np.swapaxes(np.array(R)[:,:,:,0],1,2)
+				M = np.swapaxes(np.array(M)[:,:,:,0],1,2)
+				R = np.swapaxes(R,0,2)
+				M = np.swapaxes(M,0,2)
+				if(ks is not None):
+					times = np.arange(0,ks[1])
+					x,u = self.get_x_u_sls(R,M,hor,times)
+					if(heatmap):
+						plot_hmap(self,times,x,"State","k")
+						plot_hmap(self,times,u,"Input","k")
+					else:
+						times = np.arange(0,ks[1]+1)
+						plot_sio(self,times,True,grid,x=x,u=u)
+				return [R,M]
+
+
+
+	def sls_fast(self,hor,d,C1=None,D12=None,ks=None,heatmap=False,grid=False):
+		if(self.ready()):
+			if(self.B is not None):
+				if(C1 is None):
+					C1 = np.eye(np.shape(self.A)[0])
+				if(D12 is None):
+					D12 = np.eye(np.shape(self.B)[1])
+				[n,nu] = np.shape(self.B)
+				A = self.A
+				B = self.B
+				R_struc = np.linalg.matrix_power(binify(self.A),d-1)
+				M_struc = binify(np.matmul(self.B.T,np.array(R_struc)))
+				cols_r = []
+				cols_m = []
+				As = []
+				Bs = []
+				Cs = []
+				Ds = []
+				eye = []
+				for col in range(0,n):
+					cols_r.append(np.nonzero(R_struc[:,col])[0])
+					col_r_n = np.shape(cols_r[col][0])
+					cols_m.append(np.nonzero(M_struc[:,col])[0])
+					col_m_n = np.shape(cols_m[col][0])
+					s_r = set()
+					for row in cols_r[col]:
+						s_r.update(np.nonzero(A[:,row])[0].tolist())	
+						s_r.update(np.nonzero(C1[:,row])[0].tolist())	
+					for row in cols_m[col]:
+						s_r.update(np.nonzero(B[:,row])[0].tolist())
+						s_r.update(np.nonzero(D12[:,row])[0].tolist())
+					this_A = np.zeros((len(s_r),len(s_r)))
+					this_B = np.zeros((len(s_r),len(cols_m[col])))
+					this_C = np.zeros((len(s_r),len(s_r)))
+					this_D = np.zeros((len(s_r),len(cols_m[col])))
+					for i,row in enumerate(cols_r[col]):
+						this_A[:,i] = A[sorted(s_r),row]
+						this_C[:,i] = C1[sorted(s_r),row]
+					for i,row in enumerate(cols_m[col]):
+						this_B[:,i] = B[sorted(s_r),row]
+						this_D[:,i] = D12[sorted(s_r),row]
+					this_eye = np.zeros((len(s_r),))
+					this_eye[cols_r[col].tolist().index(col)]=1
+					eye.append(this_eye)
+					As.append(this_A)
+					Bs.append(this_B)
+					Cs.append(this_C)
+					Ds.append(this_D)
+				pool = mp.Pool(processes=mp.cpu_count())
+				args_list = zip(As,Bs,Cs,Ds,cols_r,cols_m,repeat(hor),eye,repeat(n),repeat(nu))
+				t0 = time.time()
+				res = pool.starmap(eval_i_fast,args_list)
+				t1 = time.time()
+				[R,M] = list(zip(*res))
+				R = np.swapaxes(np.array(R)[:,:,:],1,2)
+				M = np.swapaxes(np.array(M)[:,:,:],1,2)
+				R = np.swapaxes(R,0,2)
+				M = np.swapaxes(M,0,2)
+				if(ks is not None):
+					times = np.arange(0,ks[1])
+					x,u = self.get_x_u_sls(R,M,hor,times)
+					if(heatmap):
+						plot_hmap(self,times,x,"State","k")
+						plot_hmap(self,times,u,"Input","k")
+					else:
+						times = np.arange(0,ks[1]+1)
+						plot_sio(self,times,True,grid,x=x,u=u)
+				return [R,M]
+
+def eval_i_fast(A,B,C,D,col_r,col_m,T,eye,n,nu):
+	R = [cvxpy.Variable(np.shape(A)[0],1) for t in range(0,T)]
+	M = [cvxpy.Variable(np.shape(B)[1],1) for t in range(0,T)]
+	eye_R = np.zeros(np.shape(A)[0])
+	eye_R[len(col_r):]=1
+	cost = H2_fast(R,M,C,D,T)
+	constr = [R[0]==eye]
+	for t in range(0,T-1):
+		constr += [R[t+1]==A*R[t]+B*M[t]]
+		constr += [cvxpy.mul_elemwise(eye_R,R[t])==0]
+	constr += [R[T-1]==0]
+	prob = cvxpy.Problem(cvxpy.Minimize(cost),constr)
+	a = prob.solve()
+	print(a)
+	R_min = np.array(list(map(lambda x: x.value,R)))[:,:,0]
+	M_min = np.array(list(map(lambda x: x.value,M)))[:,:,0]
+	R = np.zeros((T,n))
+	R[:,col_r] = R_min[:,0:len(col_r)]
+	M = np.zeros((T,nu))
+	M[:,col_m] = M_min[:,:]
+	return (R,M)
+
+
+def H2_fast(R,M,C,D,T):
+	toReturn = 0
+	for t in range(0,T):
+		toReturn += cvxpy.norm(C*R[t],"fro")
+		toReturn += cvxpy.norm(D*M[t],"fro")
+	return toReturn
+
+
+def eval_i(A,B,R,M,C1,D12,T,eye):
+	cost = H2(R,M,C1,D12,T)
+	constr = [R[0]==eye]
+	for t in range(0,T-1):
+		constr += [R[t+1]==A*R[t]+B*M[t]]
+	constr += [R[T-1]==0]
+	prob = cvxpy.Problem(cvxpy.Minimize(cost),constr)
+	a = prob.solve()
+	R = np.array(list(map(lambda x: x.value,R)))
+	M = np.array(list(map(lambda x: x.value,M)))
+	return (R,M)
+
+
+def H2(R,M,C,D,T):
+	toReturn = 0
+	for t in range(0,T):
+		vec1 = C*R[t]
+		vec2 = D*M[t]
+		toReturn += cvxpy.norm(vec1)
+		toReturn += cvxpy.norm(vec2)
+	return toReturn
+
+def binify(A):
+	toReturn = np.array((A!=0.0))
+	return toReturn
