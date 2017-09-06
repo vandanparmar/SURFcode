@@ -643,7 +643,6 @@ class disc:
 				pairs = np.array([pairs[0]])
 		compass(pairs)
 
-
 	def h2(self,hor,C1=None,D12=None,ks=None,heatmap=False,grid=False):
 		if(self.ready()):
 			if(self.B is not None):
@@ -683,7 +682,6 @@ class disc:
 						plot_sio(self,times,True,grid,x=x,u=u)
 				return [R,M,t1-t0]
 
-
 	def get_x_u_sls(self,R,M,T,ks,w=None):
 		[n,nu] = np.shape(self.B)
 		if (w is None):
@@ -703,9 +701,6 @@ class disc:
 			u = np.append(u,np.zeros((nu,1)),axis=1)
 			xhat = np.append(xhat,np.zeros((n,1)),axis=1)
 		return [x,u]
-
-
-
 
 	def sls_slow(self,hor,d,C1=None,D12=None,ks=None,heatmap=False,grid=False):
 		if(self.ready()):
@@ -749,7 +744,6 @@ class disc:
 						plot_sio(self,times,True,grid,x=x,u=u)
 				return [R,M]
 
-
 	def sls(self,hor,d,C1=None,D12=None,ks=None,heatmap=False,grid=False):
 		if(self.ready()):
 			if(self.B is not None):
@@ -787,61 +781,47 @@ class disc:
 						plot_sio(self,times,True,grid,x=x,u=u)
 				return [R,M]
 
+	def sls_fast(self,hor,d,C1=None,D12=None,cpu=None,ks=None,heatmap=False,grid=False):
+		"""Computes the SLS R and M matrices given a horizon and d-hop. Can also plot results for given times. Calculates results in parallel using reduced sized sub problems, thus runs in O(n) for a sufficiently distributed system. Can use specified number of cpus, default is all.	
 
+		Args:
+			hor (int): The horizon for the finite horizon impulse response
+			d (int)
+			C1 (ndarray, optional)
+			D12 (ndarray, optional)
+			cpu (int, optional)
+			ks (array, optional)
+			heatmap (bool, optional)
+			grid (bool, optional)
 
-	def sls_fast(self,hor,d,C1=None,D12=None,ks=None,heatmap=False,grid=False):
+		Returns:
+			(array): containing:
+
+				- R (ndarray): the set of T (n,n) matrices for each step of the finite impulse horizon
+				- M (ndarray): the set of T (nu,n) matrices for each step of the finite impusle horizon
+
+		"""
 		if(self.ready()):
 			if(self.B is not None):
 				if(C1 is None):
 					C1 = np.eye(np.shape(self.A)[0])
 				if(D12 is None):
 					D12 = np.eye(np.shape(self.B)[1])
+				if(cpu is None):
+					cpu = mp.cpu_count()
+				elif(cpu==-1):
+					cpu = mp.cpu_count()-1
 				[n,nu] = np.shape(self.B)
 				A = self.A
 				B = self.B
-				R_struc = np.linalg.matrix_power(binify(self.A),d-1)
+				R_struc = np.linalg.matrix_power(binify(A),d-1)
 				M_struc = binify(np.matmul(self.B.T,np.array(R_struc)))
-				cols_r = []
-				cols_m = []
-				As = []
-				Bs = []
-				Cs = []
-				Ds = []
-				eye = []
-				for col in range(0,n):
-					cols_r.append(np.nonzero(R_struc[:,col])[0])
-					col_r_n = np.shape(cols_r[col][0])
-					cols_m.append(np.nonzero(M_struc[:,col])[0])
-					col_m_n = np.shape(cols_m[col][0])
-					s_r = set()
-					for row in cols_r[col]:
-						s_r.update(np.nonzero(A[:,row])[0].tolist())	
-						s_r.update(np.nonzero(C1[:,row])[0].tolist())	
-					for row in cols_m[col]:
-						s_r.update(np.nonzero(B[:,row])[0].tolist())
-						s_r.update(np.nonzero(D12[:,row])[0].tolist())
-					this_A = np.zeros((len(s_r),len(s_r)))
-					this_B = np.zeros((len(s_r),len(cols_m[col])))
-					this_C = np.zeros((len(s_r),len(s_r)))
-					this_D = np.zeros((len(s_r),len(cols_m[col])))
-					for i,row in enumerate(cols_r[col]):
-						this_A[:,i] = A[sorted(s_r),row]
-						this_C[:,i] = C1[sorted(s_r),row]
-					for i,row in enumerate(cols_m[col]):
-						this_B[:,i] = B[sorted(s_r),row]
-						this_D[:,i] = D12[sorted(s_r),row]
-					this_eye = np.zeros((len(s_r),))
-					this_eye[cols_r[col].tolist().index(col)]=1
-					eye.append(this_eye)
-					As.append(this_A)
-					Bs.append(this_B)
-					Cs.append(this_C)
-					Ds.append(this_D)
-				pool = mp.Pool(processes=mp.cpu_count())
-				args_list = zip(As,Bs,Cs,Ds,cols_r,cols_m,repeat(hor),eye,repeat(n),repeat(nu))
-				t0 = time.time()
+				pool = mp.Pool(processes=cpu) #setup parallel pool - can redefine number of threads	
+				i_vals = zip(np.arange(0,n),repeat(A),repeat(B),repeat(C1),repeat(D12),repeat(R_struc),repeat(M_struc),repeat(n),repeat(nu))
+				small_args = pool.starmap(reduce_i_fast,i_vals) # create individual sets of reduced sized arguments in parallel
+				[As,Bs,Cs,Ds,cols_r,cols_m,eye] = list(zip(*small_args)) #create reduced size arguments
+				args_list = zip(As,Bs,Cs,Ds,cols_r,cols_m,eye,repeat(hor),repeat(n),repeat(nu))
 				res = pool.starmap(eval_i_fast,args_list)
-				t1 = time.time()
 				[R,M] = list(zip(*res))
 				R = np.swapaxes(np.array(R)[:,:,:],1,2)
 				M = np.swapaxes(np.array(M)[:,:,:],1,2)
@@ -858,7 +838,32 @@ class disc:
 						plot_sio(self,times,True,grid,x=x,u=u)
 				return [R,M]
 
-def eval_i_fast(A,B,C,D,col_r,col_m,T,eye,n,nu):
+def reduce_i_fast(col,A,B,C1,D12,R_struc,M_struc,n,nu):
+	cols_r = np.nonzero(R_struc[:,col])[0]
+	cols_m = np.nonzero(M_struc[:,col])[0]
+	s_r = set() #to determine relevant rows in the problem
+	for row in cols_r:
+		s_r.update(np.nonzero(A[:,row])[0].tolist())	
+		s_r.update(np.nonzero(C1[:,row])[0].tolist())	
+	for row in cols_m:
+		s_r.update(np.nonzero(B[:,row])[0].tolist())
+		s_r.update(np.nonzero(D12[:,row])[0].tolist())
+	this_A = np.zeros((len(s_r),len(s_r)))
+	this_B = np.zeros((len(s_r),len(cols_m)))
+	this_C = np.zeros((len(s_r),len(s_r)))
+	this_D = np.zeros((len(s_r),len(cols_m)))
+	for i,row in enumerate(cols_r):
+		this_A[:,i] = A[sorted(s_r),row] #saving reduced size matrices
+		this_C[:,i] = C1[sorted(s_r),row]
+	for i,row in enumerate(cols_m):
+		this_B[:,i] = B[sorted(s_r),row]
+		this_D[:,i] = D12[sorted(s_r),row]
+	this_eye = np.zeros((len(s_r),))
+	this_eye[cols_r.tolist().index(col)]=1
+	return (this_A,this_B,this_C,this_D,cols_r,cols_m,this_eye)
+
+
+def eval_i_fast(A,B,C,D,col_r,col_m,eye,T,n,nu):
 	R = [cvxpy.Variable(np.shape(A)[0],1) for t in range(0,T)]
 	M = [cvxpy.Variable(np.shape(B)[1],1) for t in range(0,T)]
 	eye_R = np.zeros(np.shape(A)[0])
@@ -880,14 +885,12 @@ def eval_i_fast(A,B,C,D,col_r,col_m,T,eye,n,nu):
 	M[:,col_m] = M_min[:,:]
 	return (R,M)
 
-
 def H2_fast(R,M,C,D,T):
 	toReturn = 0
 	for t in range(0,T):
 		toReturn += cvxpy.norm(C*R[t],"fro")
 		toReturn += cvxpy.norm(D*M[t],"fro")
 	return toReturn
-
 
 def eval_i(A,B,R,M,C1,D12,T,eye):
 	cost = H2(R,M,C1,D12,T)
@@ -900,7 +903,6 @@ def eval_i(A,B,R,M,C1,D12,T,eye):
 	R = np.array(list(map(lambda x: x.value,R)))
 	M = np.array(list(map(lambda x: x.value,M)))
 	return (R,M)
-
 
 def H2(R,M,C,D,T):
 	toReturn = 0

@@ -32,7 +32,6 @@ sim.C1 = np.eye(n)
 sim.D12 = sim.B
 
 network = dct.network(dct.chain(n))
-network.show_network()
 # sim = network.generate_disc_sim()
 # sim.C1 = np.eye(2*n)
 # sim.D12 = sim.B
@@ -46,7 +45,7 @@ sim.setx0(x0)
 
 # print(sim.sls_slow(T,d,sim.C1,sim.D12))
 # print(sim.sls(T,d,sim.C1,sim.D12))
-print(sim.sls_fast(T,d,sim.C1,sim.D12,[0,20],True))
+print(sim.sls_fast(T,d,sim.C1,sim.D12,ks=[0,20],heatmap=True))
 
 
 

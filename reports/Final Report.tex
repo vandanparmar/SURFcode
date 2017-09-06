@@ -1,0 +1,51 @@
+ \documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage{float}
+
+\begin{document}
+
+\title{Implementing A System Level Approach for Distributed Controller Synthesis}
+\author{Vandan Parmar \\
+Supervisors: James Anderson, Steven Low}
+\maketitle
+\vspace{100pt}
+\begin{abstract}
+As sensors and actuators have become increasingly small and cheap to build, their numbers have increased rapidly. Combined with ubiquitous communication networks, this has resulted in many large scale distributed networks, such as, Internet of Things, the smart grid and automated motorway systems. Designing robust and optimal distributed controllers for these large networks is theoretically challenging as the problem is nonconvex and scales poorly with system size. Many traditional (centralized) control methods assume that all information about a system is available immediately, the control action can be computed quickly and calculated actions can be communicated to the system without delay. Clearly this is not the case in many of the large networks described above. Decentralised controllers are designed to act using delayed and incomplete information meaning however, few scalable methods exist to construct decentralised controllers. \\ \indent The System Level Approach is a new framework for control of networks that decomposes the global optimization problem into locally solvable subproblems, in such a way that the resulting synthesis method is O(1) with respect to the size of the networked system. In this project, this approach is integrated into a toolbox written in Python with the aim of analyzing networked power systems.
+\end{abstract}
+
+\pagebreak
+\section{Introduction}
+"General scientific audience"
+
+Brief motivation for distributed control of large scale networks. 
+
+Toolbox written, containing O(n) SLA.
+\section{Background}
+General explanation of control, motivation for distributed control, talk about non-convexity of other methods and O(n) time complexity of SLA.
+
+\section{Theory}
+Discrete dynamical system, basic control, Youla Parameterisation, SLA.
+
+
+\section{Implementation}
+Object oriented approach. 
+
+\section{Results and Discussion}
+Show controller working, examples from slides of different types of control. Time complexity graphs - show O(n) time. Show that this is was expected / hoped for.
+\section{Conclusion}
+
+
+\cite{Amin2005}
+
+\bibliographystyle{utphys}
+\bibliography{first_interim_bib}
+
+
+\end{document}
